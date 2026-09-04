@@ -1,0 +1,110 @@
+---
+title: Introduction
+description: What wappa is, and how the transport, bot, agent, and provider layers fit together.
+---
+
+wappa is a TypeScript framework for building WhatsApp agents — bots whose "brain" is an
+LLM with tool-calling and whose "body" is a pluggable WhatsApp transport. You define an
+agent (instructions + tools + provider), pick a transport (Baileys for personal-number/QR
+login, the official WhatsApp Cloud API, or Twilio's WhatsApp API), and run.
+
+## Design
+
+- **Transport-agnostic core.** `@wappa/core` never imports a WhatsApp library; it speaks a
+  normalized message model. Adapters translate.
+- **Provider-agnostic agent loop.** The core owns the tool-call loop and conversation
+  memory. Providers (`@wappa/anthropic`, `@wappa/openai`) map one `generate()` call to
+  their SDK — and `@wappa/openai` works against any OpenAI-compatible server via `baseURL`.
+- **Middleware-first extensibility.** grammY/Telegraf-style `use(ctx, next)`, plus
+  `command()` and `hears()` routing. Auth, rate limiting, logging, transcription and
+  handoff are all just middleware.
+- **Typed tools with zod.** `defineTool` infers argument types from a zod schema,
+  validates model-supplied arguments, and turns failures into retryable tool results
+  instead of crashes.
+- **Sessions built in.** Per-chat conversation history and durable data with in-memory
+  and file-backed stores, and a lost-update-safe pause/resume flag for human handoff.
+- **Testability.** `@wappa/core/testing` ships `MockTransport` and `ScriptedProvider`,
+  so you can unit-test a whole bot offline — no WhatsApp, no LLM key.
+- **Per-chat concurrency model.** Messages within one chat are processed strictly in
+  order; different chats run concurrently. Graceful shutdown drains in-flight turns.
+
+## Architecture
+
+```txt
+                 WhatsApp
+                     │
+      ┌──────────────┴───────────────┐
+      │           Transport          │   @wappa/baileys    (personal number, QR login)
+      │  QR / webhooks / Graph API   │   @wappa/cloud-api  (official Meta Cloud API)
+      │                              │   @wappa/twilio     (Twilio WhatsApp BSP)
+      └──────────────┬───────────────┘
+                     │  InboundMessage / OutboundPayload (normalized)
+      ┌──────────────┴───────────────┐
+      │             Bot              │   per-chat queues · middleware chain
+      │   use() · command() · hears()│   built-in router · session persistence
+      └──────────────┬───────────────┘
+                     │  Context (message, session, reply, state)
+      ┌──────────────┴───────────────┐
+      │            Agent             │   tool-call loop · history window
+      │      defineTool + zod        │   error rollback · maxTurns cap
+      └──────────────┬───────────────┘
+                     │  GenerateRequest / GenerateResult
+      ┌──────────────┴───────────────┐
+      │           Provider           │   @wappa/anthropic  (Claude)
+      │        one generate()        │   @wappa/openai     (GPT + compatible servers)
+      └──────────────────────────────┘
+```
+
+A [transport](/docs/transports) delivers normalized inbound messages and sends outbound
+payloads. The [Bot](/docs/concepts#bot) runs each message through per-chat queues, your
+middleware, and the built-in router. The [Agent](/docs/concepts#agent) runs the tool-call
+loop over the session's history. A [provider](/docs/providers) maps a single `generate()`
+call to an LLM SDK.
+
+## Packages
+
+| Package             | What it is                                                                          |
+| ------------------- | ----------------------------------------------------------------------------------- |
+| `@wappa/core`        | Transport-agnostic core: `Bot`, `Agent`, `defineTool`, sessions, middleware, logger |
+| `@wappa/core/testing`| `MockTransport` + `ScriptedProvider` for offline tests                              |
+| `@wappa/baileys`     | Baileys transport — personal number via QR login (unofficial client, see below)     |
+| `@wappa/cloud-api`   | Official WhatsApp Cloud API transport (Meta webhook + Graph API, no Meta SDK)       |
+| `@wappa/twilio`      | Twilio WhatsApp transport (form-encoded webhook + Messages REST API, no Twilio SDK) |
+| `@wappa/anthropic`   | Claude provider (Anthropic Messages API), default model `claude-sonnet-5`           |
+| `@wappa/openai`      | OpenAI provider (Chat Completions), default model `gpt-5`; `baseURL` for Ollama etc.|
+| `create-wappa-agent` | Project scaffolder: `npm create wappa-agent my-bot`                                  |
+
+Runnable examples live in the repository's `examples/` directory: `echo-bot` (router-only,
+no LLM), `support-agent` (Claude + tools + Baileys, the flagship), and `cloud-api-agent`
+(OpenAI + Cloud API webhook deployment).
+
+## Not in v0.1
+
+Deliberately out of scope for v0.1 (several have [recipes](/docs/recipes) showing how to
+do them yourself):
+
+- Streaming replies
+- WhatsApp flows/forms
+- Built-in voice transcription (recipe: transcription middleware)
+- Scheduled/cron messages (recipe: plain `setInterval` + `bot.send`)
+- Built-in group mention filtering (recipe: middleware using `bot.selfId`)
+- Analytics / admin UI
+- Redis session store
+
+## A note on Baileys and WhatsApp's Terms of Service
+
+<Callout type="warn" title="Legal / ToS warning">
+  `@wappa/baileys` builds on [Baileys](https://github.com/WhiskeySockets/Baileys), an
+  **unofficial** WhatsApp Web client. Using it may violate WhatsApp's Terms of Service and
+  **can get phone numbers banned**. Use a number you can afford to lose, and prefer an
+  official transport (`@wappa/cloud-api` or `@wappa/twilio`) for anything production-grade.
+</Callout>
+
+## Where next
+
+- [Quickstart](/docs/quickstart) — install options and first run
+- [Concepts](/docs/concepts) — Bot pipeline, Agent loop, tools, sessions, middleware, handoff
+- [Transports](/docs/transports) — Baileys, Cloud API, Twilio, and how they compare
+- [Providers](/docs/providers) — Anthropic, OpenAI, OpenAI-compatible servers, custom providers
+- [Testing](/docs/testing) — unit-testing bots with `MockTransport` + `ScriptedProvider`
+- [Recipes](/docs/recipes) — handoff, media, groups, proactive messages, transcription, rate limits

@@ -1,0 +1,443 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/preset.css';
+
+/* ============================================================
+   wappa.dev — paper & ink. WhatsApp quoted by texture, not hue.
+   ============================================================ */
+
+/* ---------- palette ---------- */
+:root {
+  --paper: #f6f1e7; /* page ground — warm chat-wallpaper */
+  --surface: #fffdf8; /* cards, incoming bubbles, code chrome */
+  --ink: #14211b; /* text — green-tinted near-black */
+  --ink-muted: #5c6b62; /* 5.0:1 on paper — AA */
+  --ink-faint: #8a968d; /* 2.7:1 — DECORATIVE ONLY, never meaningful text */
+  --teal: #0a5c50; /* primary. used as ink, never as glow. 7.0:1 on paper */
+  --teal-deep: #084a40; /* hover */
+  --bubble-out: #dcf0d0; /* outgoing bubble fill */
+  --signal: #f04a2f; /* coral. DESIGN #FF6247 darkened minimally: 2.63:1 → 3.26:1 on paper (WCAG 1.4.11 non-text) */
+  --line: #dcd4c4; /* 1px hairlines are the structure */
+
+  /* font stacks (next/font variables land on <html>) */
+  --font-display:
+    var(--font-bricolage), 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-schibsted), 'Schibsted Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-mono:
+    var(--font-plex-mono), 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+
+/* night wallpaper */
+.dark {
+  --paper: #101713;
+  --surface: #18211c;
+  --ink: #ede7da;
+  --ink-muted: #9aa79e; /* 7.3:1 on paper */
+  --ink-faint: #566058; /* decorative only */
+  --teal: #4fb79a; /* 7.4:1 on paper */
+  --teal-deep: #6bcbb0;
+  --bubble-out: #1f3328;
+  --signal: #ff7a63; /* 7.1:1 on paper */
+  --line: #2a342e;
+}
+
+/* ---------- Fumadocs variables → palette (runtime custom properties) ----------
+   fumadocs-ui JS and shiki.css read these as live var()s, so they must exist
+   on :root in addition to the @theme registration below. */
+:root {
+  --color-fd-background: var(--paper);
+  --color-fd-foreground: var(--ink);
+  --color-fd-muted: color-mix(in oklab, var(--ink) 6%, var(--paper));
+  --color-fd-muted-foreground: var(--ink-muted);
+  --color-fd-popover: var(--surface);
+  --color-fd-popover-foreground: var(--ink);
+  --color-fd-card: var(--surface);
+  --color-fd-card-foreground: var(--ink);
+  --color-fd-border: var(--line);
+  --color-fd-primary: var(--teal);
+  --color-fd-primary-foreground: var(--paper);
+  --color-fd-secondary: color-mix(in oklab, var(--ink) 5%, var(--paper));
+  --color-fd-secondary-foreground: var(--ink);
+  --color-fd-accent: color-mix(in oklab, var(--teal) 10%, var(--paper));
+  --color-fd-accent-foreground: var(--ink);
+  --color-fd-ring: var(--signal);
+  --color-fd-overlay: color-mix(in oklab, var(--ink) 32%, transparent);
+
+  /* semantic (callouts are forced teal below; these keep diffs/search sane) */
+  --color-fd-info: var(--teal);
+  --color-fd-success: var(--teal);
+  --color-fd-error: var(--signal);
+  --color-fd-warning: #9a6700;
+  --color-fd-idea: var(--teal);
+  --color-fd-diff-remove: color-mix(in oklab, var(--signal) 12%, transparent);
+  --color-fd-diff-remove-symbol: var(--signal);
+  --color-fd-diff-add: color-mix(in oklab, var(--teal) 12%, transparent);
+  --color-fd-diff-add-symbol: var(--teal);
+}
+
+.dark {
+  --color-fd-warning: #d9a514;
+}
+
+/* ---------- Tailwind theme registration ---------- */
+@theme inline {
+  /* type */
+  --font-display:
+    var(--font-bricolage), 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-schibsted), 'Schibsted Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-mono:
+    var(--font-plex-mono), 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  /* palette as utilities: bg-paper, text-ink, border-line, text-teal … */
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-teal: var(--teal);
+  --color-teal-deep: var(--teal-deep);
+  --color-bubble-out: var(--bubble-out);
+  --color-signal: var(--signal);
+  --color-line: var(--line);
+
+  /* fumadocs tokens */
+  --color-fd-background: var(--paper);
+  --color-fd-foreground: var(--ink);
+  --color-fd-muted: color-mix(in oklab, var(--ink) 6%, var(--paper));
+  --color-fd-muted-foreground: var(--ink-muted);
+  --color-fd-popover: var(--surface);
+  --color-fd-popover-foreground: var(--ink);
+  --color-fd-card: var(--surface);
+  --color-fd-card-foreground: var(--ink);
+  --color-fd-border: var(--line);
+  --color-fd-primary: var(--teal);
+  --color-fd-primary-foreground: var(--paper);
+  --color-fd-secondary: color-mix(in oklab, var(--ink) 5%, var(--paper));
+  --color-fd-secondary-foreground: var(--ink);
+  --color-fd-accent: color-mix(in oklab, var(--teal) 10%, var(--paper));
+  --color-fd-accent-foreground: var(--ink);
+  --color-fd-ring: var(--signal);
+  --color-fd-overlay: color-mix(in oklab, var(--ink) 32%, transparent);
+  --color-fd-info: var(--teal);
+  --color-fd-success: var(--teal);
+  --color-fd-error: var(--signal);
+  --color-fd-warning: #9a6700;
+  --color-fd-idea: var(--teal);
+  --color-fd-diff-remove: color-mix(in oklab, var(--signal) 12%, transparent);
+  --color-fd-diff-remove-symbol: var(--signal);
+  --color-fd-diff-add: color-mix(in oklab, var(--teal) 12%, transparent);
+  --color-fd-diff-add-symbol: var(--teal);
+}
+
+@theme {
+  /* radius contract: structure 4px · buttons 6px · chat bubbles 14px */
+  --radius-structure: 4px;
+  --radius-btn: 6px;
+  --radius-bubble: 14px;
+}
+
+/* ---------- base ---------- */
+@layer base {
+  html {
+    scrollbar-gutter: stable;
+    font-family: var(--font-sans);
+  }
+
+  body {
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: var(--font-mono);
+  }
+
+  ::selection {
+    background: var(--bubble-out);
+    color: var(--ink);
+  }
+
+  .dark ::selection {
+    background: var(--bubble-out);
+    color: var(--ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--signal);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+html > body[data-scroll-locked] {
+  margin-right: 0px !important;
+  --removed-body-scroll-bar-size: 0px !important;
+}
+
+/* ---------- shared utilities (the landing composes with these) ---------- */
+
+/* full-width section band: hairline top border, no floating cards */
+@utility band {
+  width: 100%;
+  border-top: 1px solid var(--line);
+}
+
+/* mono ornament register: `01 — TRANSPORTS`, timestamps, metadata chips */
+@utility mono-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+}
+
+@utility hairline {
+  border: 1px solid var(--line);
+}
+
+/* ============================================================
+   docs theme (unlayered → wins over fumadocs' layered utilities)
+   ============================================================ */
+
+/* --- nav shell: solid paper, no glass --- */
+#nd-nav > * {
+  backdrop-filter: none;
+  background-color: var(--paper);
+}
+
+/* home-nav links (docs / github) in the mono register */
+#nd-nav ul a {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+
+/* --- sidebar: 13px IBM Plex Mono, slightly tracked --- */
+#nd-sidebar {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.015em;
+}
+
+#nd-sidebar :is(a, button, p) {
+  font-size: 13px;
+}
+
+/* --- table of contents --- */
+#nd-toc {
+  font-family: var(--font-mono);
+}
+
+#nd-toc a {
+  font-size: 13px;
+  letter-spacing: 0.015em;
+}
+
+#toc-title {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+}
+
+/* --- docs prose: Schibsted 16px/1.65, Bricolage headings --- */
+.prose {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.prose :is(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
+}
+
+.prose a:not([data-card]) {
+  color: var(--teal);
+  font-weight: 500;
+  text-decoration-line: underline;
+  text-decoration-color: color-mix(in oklab, var(--teal) 45%, transparent);
+  text-underline-offset: 3px;
+}
+
+.prose a:not([data-card]):hover {
+  color: var(--teal-deep);
+  text-decoration-color: var(--teal-deep);
+}
+
+/* inline code: mono on surface with hairline */
+.prose :not(pre) > code {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-structure);
+  padding: 0.1em 0.35em;
+}
+
+/* code blocks: surface chrome, hairline, structural radius, no shadow */
+figure.shiki {
+  background: var(--surface);
+  border-color: var(--line);
+  border-radius: var(--radius-structure);
+  box-shadow: none;
+}
+
+/* --- callouts as incoming chat bubbles --- */
+div[style*='--callout-color'] {
+  --callout-color: var(--teal) !important;
+  position: relative;
+  margin-inline-start: 6px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-bubble);
+  border-start-start-radius: var(--radius-structure);
+  box-shadow: none;
+  padding: 12px 14px;
+  gap: 10px;
+}
+
+/* drop the default left color-strip */
+div[style*='--callout-color'] > div[role='none'] {
+  display: none;
+}
+
+/* the tail: rotated square poking out of the top-left, hairline on its outer edges */
+div[style*='--callout-color']::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: -5px;
+  z-index: 1;
+  width: 9px;
+  height: 9px;
+  background: var(--surface);
+  border-left: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  border-bottom-left-radius: 2px;
+  transform: rotate(45deg);
+}
+
+/* ============================================================
+   landing components (src/components + app/(home))
+   ============================================================ */
+
+/* chat pane ground: a slightly deeper wash of the wallpaper */
+.chat-pane {
+  background: color-mix(in oklab, var(--ink) 3%, var(--paper));
+}
+
+/* bubble tails — first bubble of each run only (same construction as the
+   callout tail above: rotated square, hairline on the outward edges) */
+.bubble-tail-in,
+.bubble-tail-out {
+  position: relative;
+}
+
+.bubble-tail-in::before,
+.bubble-tail-out::before {
+  content: '';
+  position: absolute;
+  top: 5px;
+  width: 9px;
+  height: 9px;
+  transform: rotate(45deg);
+}
+
+.bubble-tail-in::before {
+  left: -5px;
+  background: var(--surface);
+  border-left: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  border-bottom-left-radius: 2px;
+}
+
+.bubble-tail-out::before {
+  right: -5px;
+  background: var(--bubble-out);
+  border-top-right-radius: 2px;
+}
+
+/* typing indicator: three dots, staggered bounce (killed by reduced-motion) */
+@keyframes typing-bounce {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+  30% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+}
+
+.typing-dot {
+  animation: typing-bounce 1.2s ease-in-out infinite;
+}
+
+/* bubble entrance during the play-once choreography */
+@keyframes bubble-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+}
+
+.bubble-enter {
+  animation: bubble-in 240ms cubic-bezier(0.2, 0.8, 0.25, 1) both;
+}
+
+/* changed transport lines in the hero code pane */
+.code-line-changed {
+  background-color: color-mix(in oklab, var(--teal) 9%, transparent);
+  box-shadow: inset 2px 0 0 var(--teal);
+}
+
+@keyframes changed-line {
+  from {
+    background-color: color-mix(in oklab, var(--teal) 24%, transparent);
+  }
+}
+
+.code-flash .code-line-changed {
+  animation: changed-line 900ms ease-out;
+}
+
+/* hand-highlight token colors (fixed landing snippets only) */
+.tok-kw {
+  color: var(--teal);
+}
+
+.tok-str {
+  color: var(--color-fd-warning);
+}
+
+.tok-cm {
+  color: var(--ink-muted);
+  font-style: italic;
+}
