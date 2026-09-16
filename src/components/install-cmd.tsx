@@ -28,7 +28,7 @@ export function InstallCmd({ className }: { className?: string }) {
         aria-labelledby={`${id}-tab-${pm}`}
         className="mt-1.5 flex items-center gap-3 rounded-btn border border-line bg-surface py-2 pl-3.5 pr-2"
       >
-        <code className="flex-1 overflow-x-auto whitespace-nowrap font-mono text-[13px] text-ink">
+        <code className="flex-1 overflow-x-auto whitespace-nowrap font-mono text-[12px] text-ink sm:text-[13px]">
           <span aria-hidden className="select-none text-ink-faint">
             ${' '}
           </span>

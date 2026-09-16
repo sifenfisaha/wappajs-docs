@@ -1,13 +1,10 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
-import { CodeChat, CodePane } from '@/components/code-chat';
-import { Conversation } from '@/components/conversation';
-import { HeroCodeChat } from '@/components/hero-code-chat';
+import { ArrowRight, ArrowUpRight } from 'lucide-react';
+import { HeroNav } from '@/components/hero-nav';
 import { InstallCmd } from '@/components/install-cmd';
-import { QrOrnament } from '@/components/qr-ornament';
-import { TickList } from '@/components/tick-list';
+import { QrWall } from '@/components/qr-wall';
 import { DoubleTick } from '@/components/ticks';
 import { gitConfig } from '@/lib/shared';
 
@@ -25,482 +22,146 @@ export const metadata: Metadata = {
 
 const github = `https://github.com/${gitConfig.user}/${gitConfig.repo}`;
 
-/* ---------- shared shells ---------- */
-
 function Container({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <div className={`mx-auto w-full max-w-6xl px-5 sm:px-8 ${className ?? ''}`}>{children}</div>
   );
 }
 
-function Band({
-  label,
-  title,
-  small = false,
-  children,
-}: {
-  label: string;
-  title: string;
-  small?: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <section className="band">
-      <Container className={small ? 'relative py-14 sm:py-16' : 'relative py-16 sm:py-24'}>
-        <QrOrnament
-          seed={label}
-          className="pointer-events-none absolute right-5 top-14 hidden text-line sm:right-8 md:block"
-        />
-        <p className="mono-label">{label}</p>
-        <h2
-          className={`mt-3 max-w-[26ch] font-display font-bold leading-[1.05] tracking-[-0.015em] ${
-            small
-              ? 'text-[clamp(1.35rem,2.6vw,1.85rem)]'
-              : 'text-[clamp(1.8rem,3.8vw,2.7rem)]'
-          }`}
-        >
-          {title}
-        </h2>
-        {children}
-      </Container>
-    </section>
-  );
-}
-
-function Terminal({
-  title,
-  children,
-  className,
-}: {
-  title: string;
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <div
-      className={`overflow-hidden rounded-structure border border-line bg-surface ${className ?? ''}`}
-    >
-      <div className="border-b border-line px-3 py-1.5 font-mono text-[11px] tracking-[0.02em] text-ink-muted">
-        {title}
-      </div>
-      <pre className="overflow-x-auto p-3.5 font-mono text-[12px] leading-[1.6] text-ink">
-        {children}
-      </pre>
-    </div>
-  );
-}
-
-/* ---------- 1 · hero ---------- */
+/* ---------- 1 · the night hero ---------- */
 
 function Hero() {
   return (
-    <section>
-      <Container className="pb-16 pt-12 sm:pb-24 sm:pt-16">
-        <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[minmax(0,10fr)_minmax(0,9fr)] lg:items-center lg:gap-16">
-          <div>
+    <section className="pt-3 sm:pt-5">
+      <Container>
+        <div className="night relative overflow-hidden rounded-panel border border-line bg-paper px-4 pb-24 pt-5 sm:px-10 sm:pb-32 sm:pt-6 lg:px-14 lg:pb-40">
+          {/* The product's own iconography at architectural scale, bleeding off the
+              right edge and clipped by the panel radius. Logging a bot in means
+              scanning one of these, which is why this hero needs no orb. */}
+          <QrWall
+            seed="agents people can text"
+            size={620}
+            className="pointer-events-none absolute -right-28 top-1/2 hidden -translate-y-1/2 text-ink-faint/25 md:block lg:-right-32"
+          />
+
+          <HeroNav github={github} />
+
+          <div className="relative max-w-[34rem]">
             <p className="mono-label">The WhatsApp agent framework</p>
-            <h1 className="mt-4 font-display text-[clamp(2.8rem,7vw,5.2rem)] font-bold leading-[0.98] tracking-[-0.02em]">
+            <h1 className="mt-5 max-w-[13ch] font-display text-[clamp(2.9rem,7.4vw,5.4rem)] font-bold leading-[0.95] tracking-[-0.03em]">
               Agents people can&nbsp;text.
             </h1>
-            <p className="mt-6 max-w-[44ch] text-[17px] leading-relaxed text-ink-muted">
-              wappa is an open-source TypeScript framework for building LLM agents that live on
-              WhatsApp. Pluggable transports, any model with tools, one small agent loop.
+            <p className="mt-7 max-w-[44ch] text-[17px] leading-relaxed text-ink-muted">
+              An open-source TypeScript framework for LLM agents that live on WhatsApp.
+              Pluggable transports, any model with tools, one small agent loop.
             </p>
-            <InstallCmd className="mt-8 max-w-sm" />
-            <p className="mt-5">
-              <Link
-                href="/docs"
-                className="font-medium text-teal underline decoration-teal/50 decoration-dotted underline-offset-4 hover:text-teal-deep hover:decoration-teal-deep"
-              >
-                Read the docs →
+
+            <div className="mt-9 flex flex-wrap items-center gap-3">
+              <Link href="/docs" className="pill pill-solid">
+                Read the docs
+                <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
               </Link>
-            </p>
-            <p className="mt-8 font-mono text-[12px] tracking-[0.05em] text-ink-muted">
-              MIT · 429 tests · three transports · zero lock-in
-            </p>
+              <a href={github} className="pill pill-ghost">
+                GitHub
+                <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" />
+              </a>
+            </div>
+
+            <InstallCmd className="mt-9 max-w-sm" />
           </div>
-          <HeroCodeChat />
         </div>
       </Container>
     </section>
   );
 }
 
-/* ---------- 2 · quickstart ---------- */
+/* ---------- 2 · the panel that laps over the hero ---------- */
 
-const QR_ART = `█▀▀▀▀▀█ ▄█▄▀▄ █▀▀▀▀▀█
-█ ███ █ ▀▄█▄▀ █ ███ █
-█ ▀▀▀ █ █▄ ▄█ █ ▀▀▀ █
-▀▀▀▀▀▀▀ ▀ █ ▀ ▀▀▀▀▀▀▀
-▀▄██▀▀▄▄▀▄▀█▄▀▄▄█▀▄▄▀
-█▀▀▀▀▀█ ▄▀▄▄ ██▄ ▀▄ █
-█ ███ █ █▄▀██▀ ▄▀██▄▀
-█ ▀▀▀ █ ▄▀ ▄▀▄█▄██▀ ▄
-▀▀▀▀▀▀▀ ▀▀ ▀▀▀ ▀▀ ▀▀▀`;
-
-const STEPS: Array<{
-  cmd: string;
-  mono: boolean;
-  note: string;
-  extra?: ReactNode;
-}> = [
+const START_STEPS = [
   {
+    index: '01',
+    title: 'Scaffold it',
     cmd: 'npm create wappa-agent my-bot',
-    mono: true,
-    note: 'scaffolds src/index.ts, tsconfig, .env.example; pnpm and bun work too',
+    body: 'Writes src/index.ts, a tsconfig and .env.example, with the packages for your answers already pinned. pnpm and bun work too.',
   },
   {
-    cmd: 'Pick a transport and a model',
-    mono: false,
-    note: '--transport baileys | cloud-api | twilio · --provider anthropic | openai (prompted if omitted)',
+    index: '02',
+    title: 'Pick a body and a brain',
+    cmd: '--transport baileys --provider anthropic',
+    body: 'Baileys, Cloud API or Twilio for the transport. Claude, GPT or any OpenAI-compatible server for the model. Omit the flags and it asks.',
   },
   {
+    index: '03',
+    title: 'Scan it, then text it',
     cmd: 'npm start',
-    mono: true,
-    note: 'after npm install && npm run build; Baileys prints a QR code on first start',
-    extra: (
-      <Terminal title="terminal" className="mt-4 max-w-xs">
-        <span aria-hidden="true">{QR_ART}</span>
-        {'\n\n'}scan from WhatsApp to log in
-      </Terminal>
-    ),
+    body: 'Baileys prints a QR code on first start. Link it from WhatsApp once, auth persists in ./wappa-auth, and the agent is live.',
   },
-  {
-    cmd: 'Scan it from WhatsApp',
-    mono: false,
-    note: 'Settings → Linked devices → Link a device · auth persists in ./wappa-auth',
-  },
-  {
-    cmd: 'Text your agent',
-    mono: false,
-    note: 'Baileys transport · personal number · no webhook, no public server',
-  },
-];
+] as const;
 
-function Quickstart() {
+function Start() {
   return (
-    <Band label="01 — Quickstart" title="Ninety seconds to a live agent.">
-      <ol className="mt-10 flex max-w-2xl flex-col">
-        {STEPS.map((step, i) => (
-          <li key={i} className="flex gap-4 sm:gap-5">
-            <div className="flex flex-col items-center">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-structure border border-line bg-surface font-mono text-[12px] text-ink-muted">
-                {i + 1}
-              </span>
-              {i < STEPS.length - 1 && <span className="w-px flex-1 bg-line" aria-hidden="true" />}
-            </div>
-            <div className={`min-w-0 flex-1 pt-1 ${i < STEPS.length - 1 ? 'pb-8' : 'pb-1'}`}>
-              {step.mono ? (
-                <p className="font-mono text-[13.5px] font-medium text-ink">
+    <div className="relative z-10 -mt-16 sm:-mt-20">
+      <Container>
+        <div className="panel px-4 py-16 sm:px-10 sm:py-20 lg:px-14">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="mono-label">Quickstart</p>
+            <h2 className="mt-4 font-display text-[clamp(1.9rem,4vw,2.9rem)] font-bold leading-[1.02] tracking-[-0.02em]">
+              Ninety seconds to a live agent.
+            </h2>
+            <p className="mt-5 text-[16px] leading-relaxed text-ink-muted">
+              No Meta business account. No tunnel. No public server. A QR code and a phone.
+            </p>
+          </div>
+
+          <ol className="mt-16 grid grid-cols-1 gap-x-10 gap-y-12 sm:grid-cols-3">
+            {START_STEPS.map((step) => (
+              <li key={step.index} className="border-t border-line pt-6">
+                <p className="font-mono text-[11.5px] tracking-[0.08em] text-teal">{step.index}</p>
+                <h3 className="mt-4 font-display text-[19px] font-semibold leading-snug tracking-[-0.01em]">
+                  {step.title}
+                </h3>
+                <p className="mt-3 font-mono text-[12px] leading-relaxed text-ink">
                   <span aria-hidden="true" className="select-none text-ink-faint">
                     ${' '}
                   </span>
                   {step.cmd}
                 </p>
-              ) : (
-                <p className="text-[15px] font-medium text-ink">{step.cmd}</p>
-              )}
-              <p className="mt-1 font-mono text-[11.5px] leading-relaxed text-ink-muted">
-                {step.note}
-              </p>
-              {step.extra}
-            </div>
-          </li>
-        ))}
-      </ol>
-      <p className="mt-10 max-w-[38ch] font-display text-[clamp(1.15rem,2.2vw,1.45rem)] font-semibold leading-snug">
-        No Meta business account. No tunnel. A QR code and a phone.
-      </p>
-    </Band>
-  );
-}
-
-/* ---------- 3 · the agent loop ---------- */
-
-const LOOP_CODE = [
-  { t: "import { Agent, defineTool } from '@wappajs/core';" },
-  { t: "import { AnthropicProvider } from '@wappajs/anthropic';" },
-  { t: "import { z } from 'zod';" },
-  { t: '' },
-  { t: 'const checkOrderStatus = defineTool({' },
-  { t: "  name: 'check_order_status'," },
-  { t: "  description: 'Look up an order by number.'," },
-  { t: '  parameters: z.object({ orderId: z.string() }),' },
-  { t: '  // results are stringified for the model, return objects' },
-  { t: '  execute: ({ orderId }) =>' },
-  { t: "    ({ orderId, status: 'left warehouse', eta: 'tomorrow' })," },
-  { t: '});' },
-  { t: '' },
-  { t: 'const agent = new Agent({' },
-  { t: "  instructions: 'Answer with check_order_status. Never guess.'," },
-  { t: '  provider: new AnthropicProvider(),' },
-  { t: '  tools: [checkOrderStatus],' },
-  { t: '  maxTurns: 8,' },
-  { t: '});' },
-];
-
-function AgentLoop() {
-  return (
-    <Band label="02 — The agent loop" title="One loop. Your tools. Any model.">
-      <CodeChat
-        className="mt-10"
-        code={<CodePane filename="src/agent.ts" lines={LOOP_CODE} />}
-        chat={
-          <Conversation
-            contact="Acme Support"
-            status="online"
-            items={[
-              { kind: 'out', text: "where's my order? it's #1042", time: '09:12' },
-              { kind: 'tool', name: 'check_order_status' },
-              {
-                kind: 'in',
-                text: 'Order #1042 left the warehouse yesterday, it should be with you tomorrow.',
-                time: '09:12',
-              },
-            ]}
-          />
-        }
-      />
-      <TickList
-        className="mt-10 max-w-4xl gap-4 sm:grid sm:grid-cols-2 sm:gap-x-12"
-        items={[
-          'Windowed memory that never sends an invalid history. The window always opens on a user message.',
-          'Tool errors go back to the model as text, not to the user.',
-          'maxTurns caps the tool loop (default 8), so no runaway provider bills.',
-          'Per-chat queues: messages in one conversation run strictly in order.',
-        ]}
-      />
-    </Band>
-  );
-}
-
-/* ---------- 4 · transports ---------- */
-
-const TRANSPORTS = [
-  {
-    index: '01',
-    name: 'Baileys',
-    pkg: '@wappajs/baileys',
-    href: '/docs/transports/baileys',
-    fact: 'A personal WhatsApp number, logged in by scanning a QR code. No business account, no webhook, no public server. The fastest route to a live agent.',
-    note: 'unofficial · use a number you can afford to lose',
-    chips: ['groups: yes', 'buttons: text-fallback', 'typing: yes', 'media: buffer · url · path'],
-  },
-  {
-    index: '02',
-    name: 'Cloud API',
-    pkg: '@wappajs/cloud-api',
-    href: '/docs/transports/cloud-api',
-    fact: "Meta's official WhatsApp Cloud API: inbound via webhook, outbound through the Graph API. Official, supported, no ban risk. The production transport.",
-    note: 'official · dm-only · webhook + graph api',
-    chips: ['groups: no', 'buttons: native ×3', 'typing: best-effort', 'media: buffer · url · path'],
-  },
-  {
-    index: '03',
-    name: 'Twilio',
-    pkg: '@wappajs/twilio',
-    href: '/docs/transports/twilio',
-    fact: 'WhatsApp through Twilio as your BSP: sandbox in minutes, Twilio owns the Meta relationship. Built on fetch and node:http, with no Twilio SDK.',
-    note: 'official · dm-only · sandbox in minutes',
-    chips: ['groups: no', 'buttons: text-fallback', 'typing: no', 'media: url-only'],
-  },
-];
-
-function Transports() {
-  return (
-    <Band label="03 — Transports" title="Three ways onto WhatsApp.">
-      <div className="mt-10">
-        {TRANSPORTS.map((t, i) => (
-          <Link
-            key={t.name}
-            href={t.href}
-            className={`group block rounded-structure border-t border-line px-2 py-6 transition-transform duration-150 hover:-translate-y-[2px] hover:bg-surface hover:shadow-[3px_3px_0_0_var(--line)] sm:px-4 ${
-              i === TRANSPORTS.length - 1 ? 'border-b' : ''
-            }`}
-          >
-            <div className="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-x-3 sm:grid-cols-[3.5rem_minmax(0,1fr)]">
-              <span className="pt-1.5 font-mono text-[12px] text-ink-muted">{t.index}</span>
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                  <h3 className="font-display text-2xl font-semibold tracking-[-0.01em]">
-                    {t.name}
-                  </h3>
-                  <span className="font-mono text-[11.5px] text-ink-muted">{t.pkg}</span>
-                  <ArrowRight
-                    aria-hidden="true"
-                    className="ml-auto h-4 w-4 self-center text-teal opacity-0 transition-opacity group-hover:opacity-100"
-                  />
-                </div>
-                <p className="mt-2 max-w-prose text-[15px] leading-relaxed text-ink-muted">
-                  {t.fact}
-                </p>
-                <p className="mt-2 font-mono text-[11.5px] tracking-[0.03em] text-ink-muted">
-                  {t.note}
-                </p>
-                <ul className="mt-3 flex flex-wrap gap-1.5">
-                  {t.chips.map((chip) => (
-                    <li
-                      key={chip}
-                      className="rounded-structure border border-line bg-surface px-1.5 py-0.5 font-mono text-[11px] text-ink-muted"
-                    >
-                      {chip}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
-      <p className="mt-8">
-        <Link
-          href="/docs/transports"
-          className="font-medium text-teal underline decoration-teal/50 decoration-dotted underline-offset-4 hover:text-teal-deep hover:decoration-teal-deep"
-        >
-          Compare transports →
-        </Link>
-      </p>
-    </Band>
-  );
-}
-
-/* ---------- 5 · handoff & sessions ---------- */
-
-function Handoff() {
-  return (
-    <Band label="04 — Human handoff" title="Escalate like a person, not a ticket.">
-      <div className="mt-10 grid grid-cols-1 items-start gap-10 lg:grid-cols-2">
-        <div className="max-w-prose">
-          <p className="text-[15px] leading-relaxed text-ink-muted">
-            One tool call sets <code className="font-mono text-[13px] text-ink">ctx.session.paused</code>{' '}
-            and the chat belongs to a human: from the next message on, the router and the agent
-            are skipped until an operator resumes it with{' '}
-            <code className="font-mono text-[13px] text-ink">bot.resume(chatId)</code>. The current
-            turn still finishes, so the model says a proper goodbye instead of going silent
-            mid-sentence.
-          </p>
-          <p className="mt-4 text-[15px] leading-relaxed text-ink-muted">
-            Sessions are plain data behind a store interface. Swap the in-memory default for{' '}
-            <code className="font-mono text-[13px] text-ink">FileSessionStore</code> and history,
-            user data and the paused flag all survive a restart. An escalated chat stays with
-            the human until someone explicitly hands it back. The support-agent example ships the
-            whole flow, operator notification and{' '}
-            <code className="font-mono text-[13px] text-ink">/resume</code> command included.
-          </p>
+                <p className="mt-3 text-[14px] leading-relaxed text-ink-muted">{step.body}</p>
+              </li>
+            ))}
+          </ol>
         </div>
-        <Conversation
-          contact="Acme Support"
-          status="last seen just now"
-          items={[
-            { kind: 'out', text: 'can I talk to a real person?', time: '15:32' },
-            { kind: 'in', text: 'Of course, getting someone for you now.', time: '15:32' },
-            { kind: 'tool', name: 'escalate_to_human' },
-            { kind: 'system', text: '— agent paused · operator notified —' },
-            {
-              kind: 'in',
-              text: "Hi, this is Dana. I can see your order, give me two minutes.",
-              time: '15:33',
-            },
-          ]}
-        />
-      </div>
-    </Band>
+      </Container>
+    </div>
   );
 }
 
-/* ---------- 6 · testing ---------- */
-
-const TEST_CODE = [
-  { t: "import { expect, it } from 'vitest';" },
-  { t: "import { Agent, Bot } from '@wappajs/core';" },
-  { t: "import { MockTransport, ScriptedProvider } from '@wappajs/core/testing';" },
-  { t: '' },
-  { t: "it('answers without WhatsApp or an API key', async () => {" },
-  { t: '  const transport = new MockTransport();' },
-  { t: "  const provider = new ScriptedProvider(['pong']);" },
-  { t: '  const bot = new Bot({' },
-  { t: '    transport,' },
-  { t: "    agent: new Agent({ instructions: 'Reply briefly.', provider })," },
-  { t: '  });' },
-  { t: '  await bot.start();' },
-  { t: '' },
-  { t: "  await transport.receive({ text: 'ping' });" },
-  { t: '' },
-  { t: '  expect(transport.sent).toEqual([' },
-  { t: "    { chatId: 'test-chat', payload: { text: 'pong' } }," },
-  { t: '  ]);' },
-  { t: '});' },
-];
-
-function Testing() {
-  return (
-    <Band label="05 — Testing" title="Test conversations offline.">
-      <CodeChat
-        className="mt-10"
-        code={<CodePane filename="src/bot.test.ts" lines={TEST_CODE} />}
-        chat={
-          <div>
-            <Terminal title="terminal">
-              <span className="text-ink-muted">$ npx vitest run</span>
-              {'\n\n'}
-              {' Test Files  '}
-              <span className="text-teal">25 passed</span>
-              {' (25)\n'}
-              {'      Tests  '}
-              <span className="text-teal">429 passed</span>
-              {' (429)\n'}
-              {'   Duration  3.15s'}
-            </Terminal>
-            <p className="mt-5 max-w-prose text-[15px] leading-relaxed text-ink-muted">
-              <code className="font-mono text-[13px] text-ink">MockTransport</code> records every
-              send. <code className="font-mono text-[13px] text-ink">ScriptedProvider</code>{' '}
-              replays canned model turns and fails loudly past the end of its script. The whole
-              pipeline (middleware, routing, agent loop, tools, sessions) runs in-memory,
-              deterministic. wappa&apos;s own 429 tests run exactly this way.
-            </p>
-          </div>
-        }
-      />
-    </Band>
-  );
-}
-
-/* ---------- 7 · honesty band ---------- */
-
-function FinePrint() {
-  return (
-    <Band label="06 — Fine print" title="Two things other sites put in the footnotes." small>
-      <div className="mt-8 grid max-w-4xl grid-cols-1 gap-8 sm:grid-cols-2">
-        <div>
-          <p className="mono-label">Baileys is unofficial</p>
-          <p className="mt-2 font-mono text-[12.5px] leading-[1.7] text-ink-muted">
-            It automates WhatsApp Web on a personal number. That can violate WhatsApp&apos;s
-            terms, and numbers can get banned. Prototype on Baileys; ship on Cloud API or Twilio.
-          </p>
-        </div>
-        <div>
-          <p className="mono-label">The 24-hour window</p>
-          <p className="mt-2 font-mono text-[12.5px] leading-[1.7] text-ink-muted">
-            On Cloud API and Twilio you can message freely for 24 hours after a customer&apos;s
-            last message. Outside it, WhatsApp requires pre-approved templates, and template
-            sending is not in wappa yet.
-          </p>
-        </div>
-      </div>
-    </Band>
-  );
-}
-
-/* ---------- 8 · footer ---------- */
+/* ---------- 3 · closing panel + footer ---------- */
 
 function Footer() {
   return (
-    <footer className="band">
-      <Container className="py-14 sm:py-16">
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-2 md:items-start">
+    <footer className="mt-20 sm:mt-28">
+      <Container className="pb-16 sm:pb-20">
+        <div className="panel px-4 py-14 text-center sm:px-10 sm:py-16">
+          <h2 className="mx-auto max-w-[18ch] font-display text-[clamp(1.7rem,3.4vw,2.4rem)] font-bold leading-[1.05] tracking-[-0.02em]">
+            Give your users a number to text.
+          </h2>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <Link href="/docs" className="pill pill-solid">
+              Read the docs
+              <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+            </Link>
+            <a href={github} className="pill pill-ghost">
+              GitHub
+              <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" />
+            </a>
+          </div>
+          <InstallCmd className="mx-auto mt-10 max-w-sm text-left" />
+        </div>
+
+        <div className="mt-14 flex flex-col gap-8 border-t border-line pt-8 md:flex-row md:items-start md:justify-between">
           <div>
-            <InstallCmd className="max-w-sm" />
-            <p className="mt-8 font-mono text-[12px] leading-relaxed text-ink-muted">
+            <p className="font-mono text-[12px] leading-relaxed text-ink-muted">
               wappa <span className="italic">(n.)</span>: what happens when WhatsApp meets a
               framework.
             </p>
@@ -510,7 +171,7 @@ function Footer() {
           </div>
           <nav
             aria-label="Footer"
-            className="flex flex-col gap-2.5 font-mono text-[13px] md:items-end"
+            className="flex flex-wrap gap-x-6 gap-y-2.5 font-mono text-[13px] md:justify-end"
           >
             <a href={github} className="text-ink-muted transition-colors hover:text-ink">
               github
@@ -530,7 +191,8 @@ function Footer() {
             </a>
           </nav>
         </div>
-        <div className="mt-12 flex justify-end">
+
+        <div className="mt-10 flex justify-end">
           <DoubleTick className="h-[10px] w-auto text-teal" aria-hidden="true" />
         </div>
       </Container>
@@ -542,12 +204,7 @@ export default function HomePage() {
   return (
     <div className="flex-1">
       <Hero />
-      <Quickstart />
-      <AgentLoop />
-      <Transports />
-      <Handoff />
-      <Testing />
-      <FinePrint />
+      <Start />
       <Footer />
     </div>
   );

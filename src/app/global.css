@@ -129,10 +129,11 @@
 }
 
 @theme {
-  /* radius contract: structure 4px · buttons 6px · chat bubbles 14px */
+  /* radius contract: structure 4px · buttons 6px · chat bubbles 14px · panels 30px */
   --radius-structure: 4px;
   --radius-btn: 6px;
   --radius-bubble: 14px;
+  --radius-panel: 30px;
 }
 
 /* ---------- base ---------- */
@@ -203,6 +204,84 @@ html > body[data-scroll-locked] {
 @utility band {
   width: 100%;
   border-top: 1px solid var(--line);
+}
+
+/* The one large radius on the site: the paper panel that laps over the night hero.
+   Flat, hairlined, no drop shadow. The overlap does the work, not a blur. */
+@utility panel {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  /* surface, not paper: it has to lift off the night hero in BOTH themes. */
+  background-color: var(--surface);
+}
+
+/* Pill actions. Solid = primary, hairline = secondary. Press is a 1px nudge. */
+@utility pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  padding: 0.6rem 1.1rem;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    transform 150ms ease;
+}
+
+@utility pill-solid {
+  background-color: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--ink);
+
+  &:hover {
+    background-color: var(--teal);
+    border-color: var(--teal);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+@utility pill-ghost {
+  border: 1px solid var(--line);
+  color: var(--ink);
+
+  &:hover {
+    border-color: var(--ink);
+    background-color: var(--surface);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+/* The night hero inverts the palette in place, so every child component
+   (bubbles, ticks, code chrome, install command) follows without new props. */
+@utility night {
+  /* A shade under the dark theme's own paper (#101713), so the hero still reads
+     as a distinct panel when the whole site is already dark. */
+  --paper: #0c1210;
+  --surface: #18211c;
+  --ink: #ede7da;
+  --ink-muted: #9aa79e;
+  --ink-faint: #566058;
+  --teal: #4fb79a;
+  --teal-deep: #6bcbb0;
+  --bubble-out: #1f3328;
+  --signal: #ff7a63;
+  --line: #2a342e;
+
+  background-color: var(--paper);
+  color: var(--ink);
 }
 
 /* mono ornament register: `01 — TRANSPORTS`, timestamps, metadata chips */
