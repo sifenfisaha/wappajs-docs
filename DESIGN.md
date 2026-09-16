@@ -125,7 +125,7 @@ static), and theme toggle. Hairline bottom border.
 
 6. **TESTING** (band, `05 — TESTING`). Heading: "Test conversations offline."
    Code block: MockTransport + ScriptedProvider vitest test (real API from
-   @wappa/core/testing), right side small terminal: `✓ 429 tests` vitest output.
+   @wappajs/core/testing), right side small terminal: `✓ 429 tests` vitest output.
    Copy: one paragraph — no WhatsApp, no API keys, deterministic.
 
 7. **HONESTY BAND** (`06 — FINE PRINT`, slightly smaller). Two short columns in
@@ -134,7 +134,7 @@ static), and theme toggle. Hairline bottom border.
    messages." Trust through candor; no other dev site does this.
 
 8. **FOOTER** — hairline top. Repeat `<InstallCmd>`. Etymology line in mono:
-   `wappa (n.) — what happens when WhatsApp meets a framework.` Signed line:
+   `wappa (n.): what happens when WhatsApp meets a framework.` Signed line:
    "Built in the open. — the wappa maintainers". Links: GitHub, docs, LICENSE (MIT),
    llms.txt. Tiny ✓✓ as the final glyph on the page.
 

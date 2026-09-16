@@ -10,7 +10,7 @@ export interface CodeLine {
 
 /**
  * Minimal deterministic highlighter for the FIXED landing snippets (keywords,
- * single-quoted strings, // comments). Not a general tokenizer — the snippets
+ * single-quoted strings, // comments). Not a general tokenizer, the snippets
  * are authored to stay inside what it handles.
  */
 const TOKEN =
@@ -93,7 +93,7 @@ export function CodePane({
 /**
  * The split pair: real TypeScript on one side, the `<Conversation>` it
  * produces on the other. Side-by-side from lg up (unless `vertical`),
- * stacked on mobile — code first, then chat.
+ * stacked on mobile: code first, then chat.
  */
 export function CodeChat({
   code,

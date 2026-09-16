@@ -1,9 +1,9 @@
 ---
 title: Concepts
-description: The Bot pipeline, the Agent loop, tools, sessions, middleware, and pause/handoff in @wappa/core.
+description: The Bot pipeline, the Agent loop, tools, sessions, middleware, and pause/handoff in @wappajs/core.
 ---
 
-How the pieces of `@wappa/core` fit together: the `Bot` pipeline, the `Agent` loop,
+How the pieces of `@wappajs/core` fit together: the `Bot` pipeline, the `Agent` loop,
 tools, sessions, middleware, and pause/handoff.
 
 ## Bot
@@ -15,12 +15,12 @@ const bot = new Bot({
   transport,                 // required: any Transport implementation
   agent,                     // optional: router-only bots are valid
   sessions,                  // default: new MemorySessionStore()
-  ignoreFromMe: true,        // default true — drop messages sent by the bot's own number
+  ignoreFromMe: true,        // default true: drop messages sent by the bot's own number
   ignoreGroups: false,       // default false
   allowFrom: ['15551234567'],// optional allowlist of senderIds; others silently dropped
   logger,                    // default consoleLogger() ('info' level)
   onError,                   // default: logger.error
-  typingIndicator: true,     // default true — best-effort typing indicator while the agent thinks
+  typingIndicator: true,     // default true: best-effort typing indicator while the agent thinks
 });
 ```
 
@@ -36,13 +36,13 @@ For each inbound message:
    run concurrently. The queue entry is pruned when it drains.
 3. **Session + Context.** The session is loaded from the store (or `createSession()` for
    a new chat) and a `Context` is built. The context is registered as the chat's live
-   in-flight context until step 5 completes (this matters for `pause`/`resume` — see
+   in-flight context until step 5 completes (this matters for `pause`/`resume`, see
    below).
 4. **Middleware chain**, in `use()` registration order, with the **built-in router** as
    the innermost handler:
    1. If `session.paused` → stop. No routing, no agent (middleware already ran).
    2. If the message has no `text` (reaction-only, media without caption, location-only,
-      …) → skip routing and the agent entirely. Middleware still ran — observation
+      …) → skip routing and the agent entirely. Middleware still ran, and observation
       middleware is the way to react to these.
    3. First matching `command()`, else first matching `hears()` → run its handler; done.
    4. Else, if an `agent` is configured: send the typing indicator (when enabled), run
@@ -51,7 +51,7 @@ For each inbound message:
       a transport typing failure is debug-logged and never aborts the turn.
    5. Else: do nothing.
 5. **Save session.** `session.updatedAt = Date.now()`, then `sessions.set(...)`. The
-   session is saved **even when step 4 threw** — whatever consistent state the pipeline
+   session is saved **even when step 4 threw**. Whatever consistent state the pipeline
    left behind is persisted.
 6. **Errors** anywhere in the pipeline go to `onError(err, ctx)`; they never crash the
    process or the queue.
@@ -66,7 +66,7 @@ bot.command('/reset', async (ctx) => {
 
 bot.command('resume', handler); // missing '/' is normalized: 'resume' === '/resume'
 
-bot.hears('menu', handler);        // exact trimmed match, case-insensitive — NOT substring
+bot.hears('menu', handler);        // exact trimmed match, case-insensitive, NOT substring
 bot.hears(/order #(\d+)/i, handler); // RegExp: tested against the raw text
 ```
 
@@ -87,7 +87,7 @@ case-insensitively (Telegraf-style exact trigger). Use a RegExp for anything fuz
 
 ### Lifecycle events
 
-`on()` is for transport lifecycle only — message handling belongs to
+`on()` is for transport lifecycle only. Message handling belongs to
 `use()`/`command()`/`hears()`/agent:
 
 ```ts
@@ -105,7 +105,7 @@ bot.on('disconnect', (reason) => { /* e.g. 'loggedOut' on Baileys */ });
 - `bot.stop()` is a graceful shutdown: new inbound messages are dropped, all per-chat
   queues drain (in-flight turns finish and their sessions save), then the transport
   stops. Idempotent.
-- `bot.send(chatId, content)` sends proactively any time after start — no inbound
+- `bot.send(chatId, content)` sends proactively any time after start, with no inbound
   message required.
 
 ## Context
@@ -116,7 +116,7 @@ Every middleware, route handler, and tool receives the same per-message `Context
 interface Context {
   message: InboundMessage;     // the normalized inbound message
   bot: Bot;                    // for bot.send, bot.pause/resume, bot.selfId
-  session: SessionData;        // loaded session — mutate freely; Bot saves it after the pipeline
+  session: SessionData;        // loaded session, mutate freely; Bot saves it after the pipeline
   state: Record<string, unknown>; // per-message scratch space; NOT persisted
   reply(content): Promise<SendResult>;  // send to message.chatId
   sendTyping(on?): Promise<void>;       // no-op if the transport lacks it; default on=true
@@ -147,21 +147,21 @@ interface SessionData {
 Two stores ship with core, both implementing the three-method `SessionStore` interface
 (`get`/`set`/`delete`, all promise-based):
 
-- `MemorySessionStore` — Map-backed, the default. Not durable across restarts.
-- `FileSessionStore(dir)` — one JSON file per chat under `dir` (chatId sanitized with
+- `MemorySessionStore`: Map-backed, the default. Not durable across restarts.
+- `FileSessionStore(dir)`: one JSON file per chat under `dir` (chatId sanitized with
   `encodeURIComponent`), written atomically via tmp-file + rename. `get()` returns
   `undefined` for a missing file **and** for unparseable JSON, so a corrupt file can
-  never permanently brick a chat — the next save overwrites it.
+  never permanently brick a chat. The next save overwrites it.
 
 ```ts
-import { FileSessionStore } from '@wappa/core';
+import { FileSessionStore } from '@wappajs/core';
 const bot = new Bot({ transport, agent, sessions: new FileSessionStore('.wappa-sessions') });
 ```
 
 ## Middleware
 
 Koa/grammY-style: `(ctx, next)` functions run in registration order around the built-in
-router. Not calling `next()` stops the chain — router included. Calling `next()` twice
+router. Not calling `next()` stops the chain, router included. Calling `next()` twice
 throws `Error('next() called multiple times')`.
 
 ```ts
@@ -172,15 +172,15 @@ bot.use(async (ctx, next) => {
 });
 ```
 
-Core ships one middleware factory, `rateLimit` — a fixed-window counter per chat:
+Core ships one middleware factory, `rateLimit`, a fixed-window counter per chat:
 
 ```ts
-import { rateLimit } from '@wappa/core';
+import { rateLimit } from '@wappajs/core';
 
 bot.use(rateLimit({
   windowMs: 60_000, // default
   max: 20,          // default: 20 messages per window per chat
-  onLimit: (ctx) => ctx.reply('Slow down a little — try again in a minute.'),
+  onLimit: (ctx) => ctx.reply('Slow down a little, try again in a minute.'),
 }));
 ```
 
@@ -193,7 +193,7 @@ Over-limit messages are dropped: `onLimit` is called (awaited; errors go to
 schema, argument types are inferred end-to-end:
 
 ```ts
-import { defineTool } from '@wappa/core';
+import { defineTool } from '@wappajs/core';
 import { z } from 'zod';
 
 const checkOrder = defineTool({
@@ -218,21 +218,21 @@ const checkOrder = defineTool({
   string** (`Error: invalid arguments for tool "…": …`) so the model can retry;
 - `execute` results are stringified: strings pass through, `null`/`undefined` → `"ok"`,
   objects/arrays → `JSON.stringify`, other primitives → `String(value)`;
-- thrown errors → `"Error: <message>"` as the result string — a failing tool never
+- thrown errors → `"Error: <message>"` as the result string. A failing tool never
   crashes the agent loop.
 
 ## Agent
 
 ```ts
 const agent = new Agent({
-  instructions,           // string, or (ctx) => string | Promise<string> — re-evaluated per message
+  instructions,           // string, or (ctx) => string | Promise<string>, re-evaluated per message
   provider,               // AnthropicProvider, OpenAIProvider, or your own
   tools: [checkOrder],    // optional
   maxTurns: 8,            // default: max provider round-trips per inbound message
   maxHistoryMessages: 40, // default: history window (ChatMessages kept in session)
   maxHistoryChars: 200_000, // default: cap on total history content chars (see below)
   maxTokens: 1024,        // default
-  temperature: 0.7,       // omitted from requests unless set (and some models drop it —
+  temperature: 0.7,       // omitted from requests unless set (and some models drop it,
                           // see the Providers page)
 });
 ```
@@ -247,7 +247,7 @@ does) and does **not** persist the session (also the Bot's job):
    with `senderName || senderId` + `: ` so the model knows who is speaking.
 2. **Loop** (up to `maxTurns` times): call `provider.generate()` with the system
    prompt, the windowed history, and the tool specs.
-   - If the model returned no tool calls, its text is the final answer — stop.
+   - If the model returned no tool calls, its text is the final answer, so stop.
    - Otherwise append the assistant message (with its `toolCalls`) and execute each
      requested call **sequentially** via `tool.invoke(args, ctx)`, appending one
      `role: 'tool'` message per call.
@@ -261,18 +261,18 @@ does) and does **not** persist the session (also the Bot's job):
 5. **History windowing.** History is trimmed to `maxHistoryMessages`, and the window is
    aligned forward to the next `user` message, so **the window always opens with a user
    message** (providers reject histories that start with an assistant or tool message).
-   That alignment also keeps assistant-toolCalls/tool-results groups whole — a group at
+   That alignment also keeps assistant-toolCalls/tool-results groups whole. A group at
    the window edge is dropped, never split. If aligning would empty the window (e.g. one
    tool group larger than the whole window), the slice **falls back to the last user
    message** in history, so every request still carries the current user turn. A second
    cap, `maxHistoryChars` (default `200_000` total content chars), then drops the
-   **oldest whole user-turn group** while over budget — always keeping at least the
-   final user message — so one huge pasted message can't permanently exceed the model
+   **oldest whole user-turn group** while over budget, always keeping at least the
+   final user message, so one huge pasted message can't permanently exceed the model
    context (failed turns roll back, so an oversized window would otherwise be retried
    forever). The same windowing is applied to what is sent to the provider on every
    call.
 6. **Error rollback.** If `generate` or the loop throws, `ctx.session.history` is
-   restored to its pre-run snapshot before the error propagates — a failed turn is never
+   restored to its pre-run snapshot before the error propagates. A failed turn is never
    persisted (the Bot still saves the session afterwards, now containing the rolled-back
    history).
 
@@ -288,7 +288,7 @@ phone/dashboard without the bot interfering.
 Three ways to flip it, all lost-update safe:
 
 ```ts
-// 1. Inside a handler or tool for the CURRENT chat — the most direct form:
+// 1. Inside a handler or tool for the CURRENT chat, the most direct form:
 ctx.session.paused = true;                 // Bot's own pipeline save persists it
 
 // 2. From anywhere, for any chat:
@@ -300,10 +300,10 @@ await bot.resume(chatId);
 the pipeline's own save and deterministically lose one of the two writes with any store
 that returns copies, e.g. `FileSessionStore`). Instead:
 
-- If the chat has a **live in-flight context** (its pipeline is currently running — the
+- If the chat has a **live in-flight context** (its pipeline is currently running, the
   common case when a tool calls `ctx.bot.pause(ctx.message.chatId)`), the live
   `ctx.session.paused` is mutated directly and the pipeline's save persists it. This
-  deliberately does not enqueue on the per-chat queue — the current turn holds it, and
+  deliberately does not enqueue on the per-chat queue. The current turn holds it, and
   enqueueing would deadlock.
 - Otherwise, a load→mutate→save job is enqueued on the chat's per-chat queue so it
   serializes with message processing.

@@ -8,14 +8,14 @@ import { TextTabs } from './text-tabs';
 /**
  * Hero proof of "pluggable transports": three tabs over the SAME agent code,
  * swapping only the transport import + constructor lines (highlighted on
- * switch). The chat side never changes — and never remounts, so the
+ * switch). The chat side never changes, and never remounts, so the
  * play-once choreography survives tab switching.
  */
 
 function heroLines(importLine: string, ctorLines: string[]): CodeLine[] {
   return [
-    { t: "import { Agent, Bot, defineTool } from '@wappa/core';" },
-    { t: "import { AnthropicProvider } from '@wappa/anthropic';" },
+    { t: "import { Agent, Bot, defineTool } from '@wappajs/core';" },
+    { t: "import { AnthropicProvider } from '@wappajs/anthropic';" },
     { t: importLine, c: true },
     { t: "import { z } from 'zod';" },
     { t: '' },
@@ -44,13 +44,13 @@ function heroLines(importLine: string, ctorLines: string[]): CodeLine[] {
 const TABS: Array<{ label: string; lines: CodeLine[] }> = [
   {
     label: 'Baileys',
-    lines: heroLines("import { BaileysTransport } from '@wappa/baileys';", [
+    lines: heroLines("import { BaileysTransport } from '@wappajs/baileys';", [
       '  transport: new BaileysTransport(),',
     ]),
   },
   {
     label: 'Cloud API',
-    lines: heroLines("import { CloudApiTransport } from '@wappa/cloud-api';", [
+    lines: heroLines("import { CloudApiTransport } from '@wappajs/cloud-api';", [
       '  transport: new CloudApiTransport({',
       '    accessToken: process.env.WHATSAPP_ACCESS_TOKEN!,',
       '    phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID!,',
@@ -61,7 +61,7 @@ const TABS: Array<{ label: string; lines: CodeLine[] }> = [
   },
   {
     label: 'Twilio',
-    lines: heroLines("import { TwilioTransport } from '@wappa/twilio';", [
+    lines: heroLines("import { TwilioTransport } from '@wappajs/twilio';", [
       '  transport: new TwilioTransport({',
       '    accountSid: process.env.TWILIO_ACCOUNT_SID!,',
       '    authToken: process.env.TWILIO_AUTH_TOKEN!,',
@@ -73,9 +73,9 @@ const TABS: Array<{ label: string; lines: CodeLine[] }> = [
 ];
 
 const CHAT: ConversationItem[] = [
-  { kind: 'out', text: "hey — where's my order? A-1001", time: '12:04' },
+  { kind: 'out', text: "hey, where's my order? A-1001", time: '12:04' },
   { kind: 'tool', name: 'check_order_status' },
-  { kind: 'in', text: 'Order A-1001 shipped — it should arrive in 2 days.', time: '12:04' },
+  { kind: 'in', text: 'Order A-1001 shipped, it should arrive in 2 days.', time: '12:04' },
 ];
 
 export function HeroCodeChat({ className }: { className?: string }) {

@@ -5,6 +5,6 @@ export const docsContentRoute = '/llms.mdx/docs';
 
 export const gitConfig = {
   user: 'sifenfisaha',
-  repo: 'wappa',
+  repo: 'wappajs',
   branch: 'main',
 };

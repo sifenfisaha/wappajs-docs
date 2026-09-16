@@ -1,28 +1,28 @@
 ---
 title: Cloud API
-description: The official WhatsApp Cloud API transport — Meta dashboard walkthrough, webhook server, signature verification, and message mapping.
+description: The official WhatsApp Cloud API transport. Covers the Meta dashboard walkthrough, webhook server, signature verification, and message mapping.
 ---
 
-`CloudApiTransport` (`@wappa/cloud-api`) speaks the **official WhatsApp Cloud API**:
+`CloudApiTransport` (`@wappajs/cloud-api`) speaks the **official WhatsApp Cloud API**:
 inbound messages arrive via a Meta webhook, outbound messages go out through the Graph
-API. No Meta SDK — just `node:http`, `node:crypto`, and the global `fetch`.
+API. No Meta SDK, just `node:http`, `node:crypto`, and the global `fetch`.
 
 This is the transport to use for production: official, supported, no ban risk.
-One structural difference from Baileys: **the Cloud API is DM-only** — every mapped
+One structural difference from Baileys: **the Cloud API is DM-only**, so every mapped
 message has `isGroup: false` and `chatId === senderId` (the sender's phone number, e.g.
 `15551234567`).
 
 ## Options
 
 ```ts
-import { CloudApiTransport } from '@wappa/cloud-api';
+import { CloudApiTransport } from '@wappajs/cloud-api';
 
 const transport = new CloudApiTransport({
-  accessToken: '...',            // required — Graph API access token
-  phoneNumberId: '...',          // required — the WhatsApp business phone number id
-  verifyToken: '...',            // required — webhook verify token YOU invent
-  appSecret: '...',              // strongly recommended — enables signature verification
-  port: 3000,                    // optional — start an internal node:http webhook server
+  accessToken: '...',            // required: Graph API access token
+  phoneNumberId: '...',          // required: the WhatsApp business phone number id
+  verifyToken: '...',            // required: webhook verify token YOU invent
+  appSecret: '...',              // strongly recommended: enables signature verification
+  port: 3000,                    // optional: start an internal node:http webhook server
   webhookPath: '/webhook',       // default
   graphApiVersion: 'v23.0',      // default
   baseUrl: 'https://graph.facebook.com', // default (override for tests)
@@ -31,7 +31,7 @@ const transport = new CloudApiTransport({
 ```
 
 If `appSecret` is omitted the transport still works but **skips signature
-verification** and logs a prominent warning — anyone who discovers your webhook URL can
+verification** and logs a prominent warning. Anyone who discovers your webhook URL can
 forge inbound events. Set it.
 
 ## Meta dashboard walkthrough
@@ -50,7 +50,7 @@ You need a Meta developer app with the WhatsApp product. Step by step:
 
 Under **WhatsApp → API Setup**:
 
-- Meta provisions a free **test number**. Its **Phone number ID** (a long numeric id —
+- Meta provisions a free **test number**. Its **Phone number ID** (a long numeric id,
   not the phone number itself) is displayed right there: that's your `phoneNumberId`.
 - A **temporary access token** (valid ~24h) is shown at the top: fine for a first run.
   For anything longer-lived, create a **system user** in Meta Business Settings, assign
@@ -92,12 +92,12 @@ logs.
 ### 6. Subscribe to the `messages` field
 
 Still under **Webhook**, click **Manage** and subscribe to the **`messages`** webhook
-field — without this subscription Meta never delivers inbound messages.
+field. Without this subscription Meta never delivers inbound messages.
 
 ### 7. App secret (signature verification)
 
 Under **App settings → Basic**, reveal the **App secret** and pass it as `appSecret`.
-Every webhook `POST` then carries an `X-Hub-Signature-256` header — an HMAC-SHA256 of
+Every webhook `POST` then carries an `X-Hub-Signature-256` header, an HMAC-SHA256 of
 the **raw body bytes** keyed with the app secret. The transport verifies it with a
 timing-safe compare and answers **401** without processing when it's missing or wrong.
 
@@ -113,7 +113,7 @@ const bot = new Bot({ transport /* port: 3000 set above */, agent });
 await bot.start();
 ```
 
-With `port: 0` the OS picks an ephemeral port — read it from
+With `port: 0` the OS picks an ephemeral port, read it from
 `transport.httpServer.address()` (useful in tests).
 
 ### Mounting into your own server
@@ -124,11 +124,11 @@ and POST event delivery, and returns `true` when the request's path matched (i.e
 handled).
 
 `handleRequest` reads the raw request body itself **unless** you pass `rawBody`. Pass it
-whenever a framework body-parser has already consumed the stream — the HMAC signature
+whenever a framework body-parser has already consumed the stream. The HMAC signature
 check always runs over these exact raw bytes, so it must be the raw body, not re-encoded
 JSON.
 
-**Express** — use `express.raw` with a wildcard `type` on the webhook path (Express's
+**Express**: use `express.raw` with a wildcard `type` on the webhook path (Express's
 default raw type is `application/octet-stream`; the webhook posts JSON, so widen it) and
 pass `req.body` through:
 
@@ -137,7 +137,7 @@ import express from 'express';
 
 const app = express();
 
-// Keep the body raw on the webhook path — do NOT let express.json() touch it.
+// Keep the body raw on the webhook path, do NOT let express.json() touch it.
 app.use('/webhook', express.raw({ type: '*/*' }));
 
 app.all('/webhook', async (req, res) => {
@@ -151,19 +151,19 @@ app.listen(3000);
 ```
 
 For a plain `node:http` server, just call `handleRequest(req, res)` (no `rawBody`
-needed — the transport reads the stream) and 404 anything it didn't handle.
+needed, the transport reads the stream) and 404 anything it didn't handle.
 
 ### POST handling semantics
 
 Valid webhook POSTs are acknowledged with **200 immediately** and processed
-asynchronously (Meta retries slow webhooks). Request bodies are capped at **1 MiB** —
+asynchronously (Meta retries slow webhooks). Request bodies are capped at **1 MiB**,
 real Cloud API events are small JSON documents, and the buffering happens before
 authentication, so the cap stays low; an over-limit body is answered with 400 and
 never processed.
 
 `entry[].changes[].value.messages[]` are mapped and handed to the pipeline **in order,
 without awaiting each handler**: delivery is non-blocking, so one chat's slow agent
-turn can't stall delivery to every other chat in the same POST — per-chat ordering is
+turn can't stall delivery to every other chat in the same POST. Per-chat ordering is
 still guaranteed by the Bot's per-chat queue (its enqueue is synchronous).
 
 Meta delivers webhooks **at-least-once**, so the transport dedups redeliveries: it
@@ -195,17 +195,17 @@ several fields the precedence is **buttons > media > location > text**:
 - **Text** → `{ type: 'text', text: { body, preview_url: true } }`.
 - **Buttons** → a native interactive button message with up to **3** reply buttons
   (more throws), using `text` as the required message body. Replies come back with
-  `buttonId` set — see the [buttons recipe](/docs/recipes#portable-quick-reply-buttons).
+  `buttonId` set, see the [buttons recipe](/docs/recipes#portable-quick-reply-buttons).
   Media sent **alongside buttons** becomes the interactive message **header**
   (image/video/document; Buffers and local paths are uploaded first, like plain media
-  sends) — except audio and sticker, which the Cloud API cannot render as a header:
+  sends), except audio and sticker, which the Cloud API cannot render as a header:
   those are **dropped with a warning** and the button message is sent without media.
-- **Media** — an `https:` URL is sent by link; a Buffer or local file path is first
+- **Media**: an `https:` URL is sent by link; a Buffer or local file path is first
   uploaded via `/{phoneNumberId}/media` (multipart) and sent by id. Uploads **require**
   `mimetype` (throws otherwise). Captions apply to image/video/document (not
   audio/sticker); `filename` applies to documents.
 - **Location** → a location message.
-- **`replyTo`** → `context: { message_id }` (a real quoted reply — Cloud API supports it).
+- **`replyTo`** → `context: { message_id }` (a real quoted reply, Cloud API supports it).
 
 Any non-2xx Graph response makes `send` throw an `Error` that includes the HTTP status
 and the response body.
@@ -213,6 +213,6 @@ and the response body.
 `sendTyping(chatId, true)` needs an inbound message id (Cloud API ties typing to marking
 a message read): the transport remembers the last inbound id per chat (bounded to the
 1000 most recently active chats) and no-ops when it has none. `sendTyping(chatId, false)`
-is always a no-op — the indicator auto-clears. Typing is **best-effort**: a Graph API
+is always a no-op, the indicator auto-clears. Typing is **best-effort**: a Graph API
 failure is debug-logged, never thrown, so a typing indicator can't kill an agent turn.
 `markRead` marks a specific message read.

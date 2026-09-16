@@ -2,16 +2,16 @@
 @import 'fumadocs-ui/css/preset.css';
 
 /* ============================================================
-   wappa.dev — paper & ink. WhatsApp quoted by texture, not hue.
+   wappa.dev, paper & ink. WhatsApp quoted by texture, not hue.
    ============================================================ */
 
 /* ---------- palette ---------- */
 :root {
-  --paper: #f6f1e7; /* page ground — warm chat-wallpaper */
+  --paper: #f6f1e7; /* page ground, warm chat-wallpaper */
   --surface: #fffdf8; /* cards, incoming bubbles, code chrome */
-  --ink: #14211b; /* text — green-tinted near-black */
-  --ink-muted: #5c6b62; /* 5.0:1 on paper — AA */
-  --ink-faint: #8a968d; /* 2.7:1 — DECORATIVE ONLY, never meaningful text */
+  --ink: #14211b; /* text, green-tinted near-black */
+  --ink-muted: #5c6b62; /* 5.0:1 on paper, AA */
+  --ink-faint: #8a968d; /* 2.7:1, DECORATIVE ONLY, never meaningful text */
   --teal: #0a5c50; /* primary. used as ink, never as glow. 7.0:1 on paper */
   --teal-deep: #084a40; /* hover */
   --bubble-out: #dcf0d0; /* outgoing bubble fill */
@@ -351,7 +351,7 @@ div[style*='--callout-color']::before {
   background: color-mix(in oklab, var(--ink) 3%, var(--paper));
 }
 
-/* bubble tails — first bubble of each run only (same construction as the
+/* bubble tails, first bubble of each run only (same construction as the
    callout tail above: rotated square, hairline on the outward edges) */
 .bubble-tail-in,
 .bubble-tail-out {

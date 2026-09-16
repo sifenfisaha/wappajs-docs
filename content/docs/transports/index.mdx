@@ -5,23 +5,23 @@ description: How the Baileys, Cloud API, and Twilio transports compare, and whic
 
 A transport is the WhatsApp half of the contract: it delivers normalized
 `InboundMessage`s to the Bot and sends `OutboundPayload`s back. The core never imports a
-WhatsApp library — three interchangeable transports ship with wappa:
+WhatsApp library. Three interchangeable transports ship with wappa:
 
-- [**Baileys**](/docs/transports/baileys) (`@wappa/baileys`) — runs on a **personal
+- [**Baileys**](/docs/transports/baileys) (`@wappajs/baileys`): runs on a **personal
   WhatsApp number** through the unofficial Baileys WhatsApp Web client. You log in by
   scanning a QR code; no business account, no webhook, no public server. The fastest way
-  to experiment — but unofficial, with ban risk (see the warning on its page).
-- [**Cloud API**](/docs/transports/cloud-api) (`@wappa/cloud-api`) — the **official
+  to experiment, but unofficial, with ban risk (see the warning on its page).
+- [**Cloud API**](/docs/transports/cloud-api) (`@wappajs/cloud-api`): the **official
   WhatsApp Cloud API**: inbound via a Meta webhook, outbound through the Graph API. The
   transport to use for production: official, supported, no ban risk. DM-only.
-- [**Twilio**](/docs/transports/twilio) (`@wappa/twilio`) — Twilio's WhatsApp Business
+- [**Twilio**](/docs/transports/twilio) (`@wappajs/twilio`): Twilio's WhatsApp Business
   API (Twilio is a WhatsApp BSP). Also official and ToS-safe. Choose it when you already
   live in the Twilio ecosystem (SMS, Voice, Studio) or want Twilio to own the Meta
   relationship; choose the Cloud API to talk to Meta directly. DM-only.
 
 ## Capability comparison
 
-| Capability | [`@wappa/baileys`](/docs/transports/baileys) | [`@wappa/cloud-api`](/docs/transports/cloud-api) | [`@wappa/twilio`](/docs/transports/twilio) |
+| Capability | [`@wappajs/baileys`](/docs/transports/baileys) | [`@wappajs/cloud-api`](/docs/transports/cloud-api) | [`@wappajs/twilio`](/docs/transports/twilio) |
 | --- | --- | --- | --- |
 | Official / ToS-safe | no (ban risk) | **yes** | **yes** |
 | Groups | yes | no (DM-only) | no (DM-only) |
@@ -33,5 +33,5 @@ WhatsApp library — three interchangeable transports ship with wappa:
 | Proactive messages | any time | 24h window / templates | 24h window / templates (templates out of scope) |
 
 Because the message model is normalized, a bot written against one transport runs on the
-others — the [portable quick-reply buttons recipe](/docs/recipes#portable-quick-reply-buttons)
+others. The [portable quick-reply buttons recipe](/docs/recipes#portable-quick-reply-buttons)
 shows how to write handlers that survive the differences above.

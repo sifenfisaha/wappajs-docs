@@ -7,10 +7,10 @@ A provider is the LLM half of the contract: the core owns the tool-call loop and
 conversation memory, and a provider maps **one** `generate()` call to its SDK. Two ship
 with wappa; writing your own is a single method.
 
-## `@wappa/anthropic` — Claude
+## `@wappajs/anthropic`: Claude
 
 ```ts
-import { AnthropicProvider } from '@wappa/anthropic';
+import { AnthropicProvider } from '@wappajs/anthropic';
 
 const provider = new AnthropicProvider({
   apiKey: '...',              // default: ANTHROPIC_API_KEY env var (SDK default)
@@ -22,15 +22,15 @@ const provider = new AnthropicProvider({
 });
 ```
 
-All options are optional — `new AnthropicProvider()` works with the env var set.
+All options are optional. `new AnthropicProvider()` works with the env var set.
 
 Mapping notes (all handled for you):
 
 - `system` travels as the API's top-level `system` param; `maxTokens` → `max_tokens`
-  (the API requires it — 1024 when unset).
+  (the API requires it, 1024 when unset).
 - `temperature` is forwarded only when set **and** the model still supports it. The
-  current model generation — `claude-fable-5`, `claude-mythos-5`, `claude-opus-5`,
-  `claude-opus-4-7`, `claude-opus-4-8`, and `claude-sonnet-5` (the default) — has
+  current model generation, covering `claude-fable-5`, `claude-mythos-5`, `claude-opus-5`,
+  `claude-opus-4-7`, `claude-opus-4-8`, and `claude-sonnet-5` (the default), has
   sampling params (`temperature`/`top_p`/`top_k`) **removed from the API** (sending
   them returns 400), so for those models the provider drops `temperature` and warns
   once per instance. `claude-opus-4-6`, `claude-sonnet-4-6` and older models (the 4.5
@@ -38,8 +38,8 @@ Mapping notes (all handled for you):
 - Assistant messages with tool calls become `text` + `tool_use` content blocks; wappa's
   `role: 'tool'` messages become `tool_result` blocks, with **consecutive tool messages
   merged into one user message** (as the Messages API expects).
-- When a request carries **no tools** but the history contains tool calls/results —
-  the agent's maxTurns-exhaustion fallback call — the tool blocks are degraded to
+- When a request carries **no tools** but the history contains tool calls/results, which is
+  the agent's maxTurns-exhaustion fallback call, the tool blocks are degraded to
   plain text (`[called <tool>({...})]` assistant lines, `[<tool> result] …` user
   lines), because the Messages API rejects `tool_use`/`tool_result` blocks without a
   `tools` param.
@@ -48,20 +48,20 @@ Mapping notes (all handled for you):
   `max_tokens` → `length`, anything else → `other`. Token usage is reported on
   `GenerateResult.usage`.
 
-## `@wappa/openai` — GPT and OpenAI-compatible servers
+## `@wappajs/openai`: GPT and OpenAI-compatible servers
 
 Built on the **Chat Completions** API for maximum compatibility, including local
 OpenAI-compatible servers.
 
 ```ts
-import { OpenAIProvider } from '@wappa/openai';
+import { OpenAIProvider } from '@wappajs/openai';
 
 const provider = new OpenAIProvider({
   apiKey: '...',        // default: OPENAI_API_KEY env var (SDK default)
   model: 'gpt-5',       // default
   baseURL: '...',       // point at any OpenAI-compatible server
-  reasoningEffort: 'low', // reasoning models only; default 'low' — see below
-  clientOptions: { /* timeout, fetch, ... — apiKey/baseURL above win on conflict */ },
+  reasoningEffort: 'low', // reasoning models only; default 'low', see below
+  clientOptions: { /* timeout, fetch, ..., apiKey/baseURL above win on conflict */ },
   logger,               // diagnostics (malformed tool-call args, dropped params,
                         // exhausted budgets); default consoleLogger()
 });
@@ -76,8 +76,8 @@ Mapping notes:
   raw JSON Schema and aren't guaranteed to satisfy structured-output restrictions).
 - The token limit is sent as `max_completion_tokens` (the current parameter, required by
   reasoning-capable models like the default `gpt-5`).
-- **Reasoning-family models** — `gpt-5*` and the o-series (`o1*`/`o3*`/`o4*`), excluding
-  the `*-chat-latest` variants (those behave like regular chat models) — reject
+- **Reasoning-family models**: `gpt-5*` and the o-series (`o1*`/`o3*`/`o4*`), excluding
+  the `*-chat-latest` variants (those behave like regular chat models), reject
   non-default `temperature` with 400, so the provider **drops `temperature`** for them
   and warns once per instance. All other models (`gpt-4o`, `*-chat-latest`, custom
   `baseURL` models) receive it unchanged.
@@ -87,7 +87,7 @@ Mapping notes:
   reasoning tokens and return an empty response. It is never sent for non-reasoning
   models, since some OpenAI-compatible servers reject unknown params.
 - When a response comes back with `finishReason 'length'` and **no text**, the provider
-  logs a warning that the completion budget was exhausted before any output — raise
+  logs a warning that the completion budget was exhausted before any output. Raise
   `maxTokens` (the agent's default is 1024).
 - Tool-call `arguments` that aren't valid JSON (or aren't an object) fall back to `{}`
   with a logged warning, so the loop keeps running and the tool's own validation answers.
@@ -96,7 +96,7 @@ Mapping notes:
 
 ### Ollama and friends via `baseURL`
 
-Any server that speaks Chat Completions works — Ollama, vLLM, llama.cpp server, LM
+Any server that speaks Chat Completions works: Ollama, vLLM, llama.cpp server, LM
 Studio, …:
 
 ```ts
@@ -111,7 +111,7 @@ Pick a model that supports tool calling if your agent has tools.
 
 ## Writing a custom provider
 
-Implement the `Provider` interface from `@wappa/core` — one readonly name and one method:
+Implement the `Provider` interface from `@wappajs/core`, one readonly name and one method:
 
 ```ts
 import type {
@@ -121,7 +121,7 @@ import type {
   Provider,
   ToolCall,         // { id, name, arguments: Record<string, unknown> }
   ToolSpec,         // { name, description, parameters: JsonSchema }
-} from '@wappa/core';
+} from '@wappajs/core';
 
 export class MyProvider implements Provider {
   readonly name = 'my-provider';
@@ -142,21 +142,21 @@ export class MyProvider implements Provider {
 
 The contract, in full:
 
-- `GenerateRequest.system` is the system prompt — there is **no** `system` role in
+- `GenerateRequest.system` is the system prompt. There is **no** `system` role in
   `ChatMessage`; every provider treats the system prompt specially, so it travels
   separately.
 - `messages` is the windowed history. Roles are `'user'`, `'assistant'` (which may carry
   `toolCalls`), and `'tool'` (one per executed call, carrying `toolCallId` and
   `toolName`, with the stringified result in `content`). Assistant `content` may be
   `''` when the model only called tools.
-- `tools` (when present) are `ToolSpec`s whose `parameters` is a JSON Schema object —
+- `tools` (when present) are `ToolSpec`s whose `parameters` is a JSON Schema object,
   map them to your API's tool/function format.
 - Return `text: null` (not `''`) when the model produced no text, and every requested
   call as a `ToolCall` with `arguments` as a plain object (parse if your API sends
   JSON strings; fall back to `{}` rather than throwing).
-- Don't loop, don't execute tools, don't touch sessions — the `Agent` does all of that.
+- Don't loop, don't execute tools, don't touch sessions. The `Agent` does all of that.
   Throwing is fine: the agent rolls the turn back and the Bot reports it via `onError`.
 
 Test it the same way the built-ins are tested: pure mapping functions plus an injected
-fake client — or just run it under the `Agent` with `MockTransport`
+fake client, or just run it under the `Agent` with `MockTransport`
 (see [Testing](/docs/testing)).

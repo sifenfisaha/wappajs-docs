@@ -1,31 +1,31 @@
 ---
 title: Baileys
-description: Run a bot on a personal WhatsApp number via QR login with @wappa/baileys — auth persistence, reconnects, and ToS caveats.
+description: Run a bot on a personal WhatsApp number via QR login with @wappajs/baileys. Covers auth persistence, reconnects, and ToS caveats.
 ---
 
-`BaileysTransport` (`@wappa/baileys`) runs your bot on a **personal WhatsApp number**
+`BaileysTransport` (`@wappajs/baileys`) runs your bot on a **personal WhatsApp number**
 through [Baileys](https://github.com/WhiskeySockets/Baileys), an unofficial WhatsApp Web
 client. You log in by scanning a QR code, exactly like linking a browser session.
 
 <Callout type="warn" title="Legal / ToS warning">
   Baileys is an unofficial client: using it may violate WhatsApp's Terms of Service and
   **can get phone numbers banned**. Use a number you can afford to lose, and prefer the
-  official Cloud API transport ([`@wappa/cloud-api`](/docs/transports/cloud-api)) for
+  official Cloud API transport ([`@wappajs/cloud-api`](/docs/transports/cloud-api)) for
   production.
 </Callout>
 
 ## Usage
 
 ```ts
-import { Bot } from '@wappa/core';
-import { BaileysTransport } from '@wappa/baileys';
+import { Bot } from '@wappajs/core';
+import { BaileysTransport } from '@wappajs/baileys';
 
 const transport = new BaileysTransport({
-  authDir: './wappa-auth',   // default — directory for multi-file auth state
-  printQR: true,            // default — print the QR to the terminal on login
+  authDir: './wappa-auth',   // default: directory for multi-file auth state
+  printQR: true,            // default: print the QR to the terminal on login
   onQR: (qr) => { /* raw QR string, for custom rendering */ },
   logger,                   // wappa Logger for adapter logs; default consoleLogger()
-  baileysLogLevel: 'silent',// default — Baileys' own (pino) log level
+  baileysLogLevel: 'silent',// default: Baileys' own (pino) log level
 });
 
 const bot = new Bot({ transport /*, agent, ... */ });
@@ -42,20 +42,20 @@ flow keeps running after it resolves:
 1. `await bot.start()` returns; a QR code is printed to the terminal (and/or `onQR` is
    called with the raw string). A fresh QR is emitted each time WhatsApp rotates it.
 2. On your phone: WhatsApp → Settings → Linked devices → Link a device → scan.
-3. When the connection opens, the transport fires `onReady` — `bot.on('ready', ...)`
+3. When the connection opens, the transport fires `onReady`, so `bot.on('ready', ...)`
    fires and `bot.selfId` is set from the socket's own user id (a JID like
    `15551234567:3@s.whatsapp.net`).
 
-Don't send proactively before `'ready'` — see "Sending while disconnected" below.
+Don't send proactively before `'ready'`, see "Sending while disconnected" below.
 
 ## Auth persistence
 
 Credentials are stored via Baileys' multi-file auth state in `authDir`
-(default `./wappa-auth` — keep it out of version control). Credential updates are
+(default `./wappa-auth`, keep it out of version control). Credential updates are
 persisted automatically whenever Baileys rotates keys, so the QR scan is a **one-time**
 step: subsequent starts reconnect silently from the stored state.
 
-Treat the auth directory as a secret — anyone holding it can act as your WhatsApp
+Treat the auth directory as a secret. Anyone holding it can act as your WhatsApp
 account. That is why the transport creates the directory with owner-only permissions
 (**0700**) and tightens an existing one to the same on start: `creds.json` is full
 account-takeover material and must never be world-readable on shared hosts. To unlink
@@ -69,19 +69,19 @@ on every successful open.
 
 The one exception is a `loggedOut` disconnect (you unlinked the device or WhatsApp
 terminated the session): the transport does **not** reconnect, logs a warning, and fires
-`onDisconnect('loggedOut')` — handle it with `bot.on('disconnect', ...)`. Delete the
+`onDisconnect('loggedOut')`. Handle it with `bot.on('disconnect', ...)`. Delete the
 auth dir and restart to relink. `stop()` also cancels any pending reconnect.
 
 ## Sending while disconnected
 
 `send()` and `markRead()` while disconnected or mid-reconnect **reject** with
-`Error('BaileysTransport: not connected')` — there is no internal outbound queueing
+`Error('BaileysTransport: not connected')`. There is no internal outbound queueing
 in v0.1. For replies inside the pipeline the rejection surfaces through the Bot's
 `onError`; for proactive `bot.send(...)` calls, catch it yourself and retry after
 `'ready'`.
 
 `sendTyping` is the exception: it is **best-effort** and returns silently (with a debug
-log) when there is no connected socket — e.g. mid-reconnect — so a typing indicator
+log) when there is no connected socket (for example mid-reconnect), so a typing indicator
 never kills an agent turn that would have succeeded after the reconnect.
 
 ## What gets mapped inbound
@@ -99,7 +99,7 @@ Only real `messages.upsert` events of type `notify` are delivered. For each mess
   the raw Baileys message is kept on `message.raw` as an escape hatch
 
 Protocol/system messages, polls, contacts, status broadcasts (`status@broadcast` is
-not a conversation a bot can reply into), `@newsletter` jids (WhatsApp Channels posts —
+not a conversation a bot can reply into), `@newsletter` jids (WhatsApp Channels posts,
 not DMs a bot should answer) and anything else without mappable content are skipped
 silently. Wrapper envelopes (ephemeral, view-once, edited, device-sent) are unwrapped
 to their inner content first.
@@ -109,11 +109,11 @@ to their inner content first.
 `bot.send` / `ctx.reply` accept a string or an `OutboundPayload`:
 
 - **Text** → plain text message.
-- **Media** — `data` may be a Buffer, an `https:` URL, or a local file path.
+- **Media**: `data` may be a Buffer, an `https:` URL, or a local file path.
   image/video/document carry a caption (`media.caption ?? payload.text`); audio supports
   `ptt: true` for voice notes; audio/sticker carry no caption and location carries no
   text, so text alongside those is dropped.
-- **Buttons** — Baileys has no native quick-reply buttons, so the transport renders a
+- **Buttons**: Baileys has no native quick-reply buttons, so the transport renders a
   **numbered text fallback** appended to the text:
 
   ```txt
@@ -123,7 +123,7 @@ to their inner content first.
   2. Pepperoni
   ```
 
-  The user answers with plain text (the number or the title) — `buttonId` never
+  The user answers with plain text (the number or the title), so `buttonId` never
   round-trips on Baileys. Portable button handling should therefore match on the
   **title** via `hears()`; see the note on `OutboundButton` in the core message model.
 - **`replyTo`** is skipped (with a debug log): Baileys quoting requires the original
@@ -134,5 +134,5 @@ to their inner content first.
 
 ## Stopping
 
-`transport.stop()` (or `bot.stop()`) closes the socket **without logging out** — the
+`transport.stop()` (or `bot.stop()`) closes the socket **without logging out**. The
 auth state stays valid for the next start. Idempotent.

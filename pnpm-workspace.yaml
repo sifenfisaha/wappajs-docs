@@ -1,5 +1,5 @@
 allowBuilds:
-  esbuild: set this to true or false
+  esbuild: false
 minimumReleaseAgeExclude:
   - '@fumadocs/base-ui@16.15.6'
   - fumadocs-core@16.15.6

@@ -28,8 +28,8 @@ const mono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL('https://wappa.dev'),
   title: {
-    default: 'wappa — the WhatsApp agent framework',
-    template: '%s — wappa',
+    default: 'wappa: the WhatsApp agent framework',
+    template: '%s · wappa',
   },
   description:
     'wappa is an open-source TypeScript framework for building LLM agents that live on WhatsApp. Pluggable transports, any model with tools, one small agent loop.',

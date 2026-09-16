@@ -1,70 +1,62 @@
 ---
 title: Quickstart
-description: Install the wappa packages — inside the workspace, from tarballs, or under your own scope — and run your first bot.
+description: Install the wappa packages from npm and run your first WhatsApp bot.
 ---
 
-wappa is a set of npm packages developed in a monorepo (npm workspaces, ESM-only,
-Node >= 20). Until the packages are published to a registry you can consume them in
-three ways; all three start the same way:
+wappa is a set of npm packages. They are ESM only and need Node 20 or newer, so your
+project needs `"type": "module"` in its `package.json`.
+
+## Scaffold a project
+
+The fastest path. The scaffolder asks which transport and provider you want, then writes a
+ready project with the right dependencies pinned.
 
 ```bash
-git clone <this-repo> wappa
-cd wappa
+npm create wappa-agent my-bot
+```
+
+Skip the prompts with flags:
+
+```bash
+npm create wappa-agent my-bot -- --transport baileys --provider anthropic --yes
+```
+
+It generates `package.json`, `tsconfig.json`, a wired `src/index.ts`, `.env.example` and a
+README. It does not run `npm install` for you:
+
+```bash
+cd my-bot
 npm install
-npm run build          # tsc -b — builds every package's dist/
-npm test               # optional: vitest run, all offline
+cp .env.example .env   # then fill in your keys
+npm run build
+npm start
 ```
 
-## Option A — build your bot inside the workspace
+## Add wappa to an existing project
 
-The lowest-friction way to experiment: add your bot as another workspace package next to
-the examples (the root `package.json` declares workspaces `packages/*` and `examples/*`).
+Pick one transport and one provider. `@wappajs/core` is always required, and `zod` is what
+you write tool schemas with.
 
 ```bash
-mkdir -p examples/my-bot/src
+npm install @wappajs/core @wappajs/baileys @wappajs/anthropic zod
 ```
 
-```json title="examples/my-bot/package.json"
-{
-  "name": "my-bot",
-  "private": true,
-  "version": "0.1.0",
-  "type": "module",
-  "main": "./dist/index.js",
-  "scripts": {
-    "build": "tsc -b",
-    "start": "node dist/index.js",
-    "dev": "node --watch dist/index.js"
-  },
-  "dependencies": {
-    "@wappa/core": "^0.1.0",
-    "@wappa/baileys": "^0.1.0",
-    "@wappa/anthropic": "^0.1.0",
-    "zod": "^4.5.4"
-  }
-}
-```
+| You want | Package |
+| --- | --- |
+| Personal number, QR login | [`@wappajs/baileys`](https://www.npmjs.com/package/@wappajs/baileys) |
+| Official Meta Cloud API | [`@wappajs/cloud-api`](https://www.npmjs.com/package/@wappajs/cloud-api) |
+| Twilio WhatsApp (BSP) | [`@wappajs/twilio`](https://www.npmjs.com/package/@wappajs/twilio) |
+| Claude | [`@wappajs/anthropic`](https://www.npmjs.com/package/@wappajs/anthropic) |
+| GPT, or any OpenAI-compatible server | [`@wappajs/openai`](https://www.npmjs.com/package/@wappajs/openai) |
 
-```json title="examples/my-bot/tsconfig.json"
-{
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "rootDir": "src", "outDir": "dist" },
-  "include": ["src"],
-  "references": [
-    { "path": "../../packages/core" },
-    { "path": "../../packages/baileys" },
-    { "path": "../../packages/anthropic" }
-  ]
-}
-```
+## Your first bot
 
-The first bot — a personal WhatsApp number, logged in via QR code, answering with Claude
-and one tool:
+A personal WhatsApp number, logged in by QR code, answering with Claude and one tool:
 
-```ts title="examples/my-bot/src/index.ts"
-import { Agent, Bot, defineTool } from '@wappa/core';
-import { BaileysTransport } from '@wappa/baileys';
-import { AnthropicProvider } from '@wappa/anthropic';
+```ts title="src/index.ts"
+import { Agent, Bot, defineTool } from '@wappajs/core';
+import { BaileysTransport } from '@wappajs/baileys';
+import { AnthropicProvider } from '@wappajs/anthropic';
 import { z } from 'zod';
 
 const agent = new Agent({
@@ -82,83 +74,43 @@ const agent = new Agent({
 
 const bot = new Bot({ transport: new BaileysTransport(), agent });
 
-await bot.start(); // prints a QR code — scan it with WhatsApp on your phone
+await bot.start(); // prints a QR code, scan it with WhatsApp on your phone
 ```
 
-Then, from the repo root:
+Run it:
 
 ```bash
-npm install                     # links the workspace deps
-npx tsc -b examples/my-bot      # builds my-bot and (via references) the packages it uses
 export ANTHROPIC_API_KEY=sk-ant-...
-node examples/my-bot/dist/index.js
+npx tsc && node dist/index.js
 ```
-
-(`npm run build` builds the projects listed in the root `tsconfig.json`; add
-`{ "path": "examples/my-bot" }` to its `references` if you want your bot included.)
 
 Scan the QR code that appears in the terminal with WhatsApp on your phone
-(Settings → Linked devices → Link a device) and message the linked number. Auth state
-persists in `./wappa-auth`, so the QR scan is only needed once.
+(Settings, then Linked devices, then Link a device) and message the linked number. Auth
+state persists in `./wappa-auth`, so the QR scan is only needed once.
 
-## Option B — `npm pack` tarballs into your own project
+<Callout type="warn" title="Baileys is an unofficial client">
+  Great for prototypes, personal bots and internal tools, but running one on a number you
+  care about carries a ban risk and sits outside WhatsApp's Terms of Service. For
+  production, use the [Cloud API](/docs/transports/cloud-api) or
+  [Twilio](/docs/transports/twilio) transport.
+</Callout>
 
-Build once, pack the packages you need, and install the tarballs into any project:
+## Working from a clone
 
-```bash
-# in the wappa repo
-npm run build
-npm pack -w packages/core -w packages/baileys -w packages/anthropic --pack-destination ..
-```
-
-This produces `wappa-core-0.1.0.tgz`, `wappa-baileys-0.1.0.tgz` and
-`wappa-anthropic-0.1.0.tgz` one directory up. In your project, install them **in one
-command** so npm resolves the `@wappa/core@^0.1.0` dependency of the adapters against the
-local core tarball instead of the registry:
+Only needed if you want to change the framework itself:
 
 ```bash
-# in your project
-npm install ../wappa-core-0.1.0.tgz ../wappa-baileys-0.1.0.tgz ../wappa-anthropic-0.1.0.tgz zod
+git clone https://github.com/sifenfisaha/wappajs.git
+cd wappajs
+npm install
+npm run build          # tsc -b, builds every package's dist/
+npm test               # vitest run, all offline
 ```
 
-Swap in `-w packages/cloud-api` / `-w packages/twilio` / `-w packages/openai` (and the
-matching tarballs) for the transport + provider combination you want. Your project needs
-`"type": "module"` and Node >= 20.
-
-## Option C — publish under your own npm scope
-
-The packages are plain, publishable npm packages (`files: ["dist"]`, `exports` maps,
-version `0.1.0`). To own them on the registry, rename them to your scope:
-
-1. In each `packages/*/package.json`, change the name — e.g. `@wappa/core` →
-   `@yourscope/wappa-core` — and update every `"@wappa/core": "^0.1.0"` dependency
-   reference to the new name.
-2. Update your imports accordingly (`from '@yourscope/wappa-core'`).
-3. Build and publish, **core first** (the adapters depend on it):
-
-```bash
-npm run build
-npm publish -w packages/core --access public
-npm publish -w packages/baileys --access public
-npm publish -w packages/cloud-api --access public
-npm publish -w packages/twilio --access public
-npm publish -w packages/anthropic --access public
-npm publish -w packages/openai --access public
-```
-
-After that, `npm install @yourscope/wappa-core @yourscope/wappa-baileys ...` works anywhere.
-
-## The scaffolder
-
-Once the packages are available from a registry, `create-wappa-agent` scaffolds a ready
-project — interactive prompts, or fully non-interactive with flags:
-
-```bash
-npm create wappa-agent my-bot -- --transport baileys --provider anthropic --yes
-```
-
-It generates `package.json`, `tsconfig.json`, a wired `src/index.ts`, `.env.example` and
-a README; it does not run `npm install` for you.
+The repo is an npm workspace, so you can add your bot under `examples/` and it will link
+against the local packages instead of the published ones. Releases are cut with
+`npm run release`, documented in
+[RELEASING.md](https://github.com/sifenfisaha/wappajs/blob/main/RELEASING.md).
 
 ## Environment variables
 
@@ -166,13 +118,13 @@ a README; it does not run `npm install` for you.
 | --- | --- |
 | `ANTHROPIC_API_KEY` | `AnthropicProvider` (SDK default when `apiKey` not passed) |
 | `OPENAI_API_KEY` | `OpenAIProvider` (SDK default when `apiKey` not passed) |
-| `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_APP_SECRET` | your Cloud API bot config — see [Cloud API](/docs/transports/cloud-api) |
-| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_NUMBER`, `TWILIO_WEBHOOK_URL` | your Twilio bot config — see [Twilio](/docs/transports/twilio) |
+| `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_APP_SECRET` | your Cloud API bot config, see [Cloud API](/docs/transports/cloud-api) |
+| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_NUMBER`, `TWILIO_WEBHOOK_URL` | your Twilio bot config, see [Twilio](/docs/transports/twilio) |
 
 ## Where next
 
-- [Concepts](/docs/concepts) — how the Bot pipeline and Agent loop actually work
-- [Baileys transport](/docs/transports/baileys) — QR login, auth persistence, reconnects, ToS caveats
-- [Cloud API transport](/docs/transports/cloud-api) — full Meta dashboard walkthrough
-- [Twilio transport](/docs/transports/twilio) — sandbox quickstart, webhook setup, capability table
-- [Testing](/docs/testing) — test your bot offline before pointing it at real WhatsApp
+- [Concepts](/docs/concepts): how the Bot pipeline and Agent loop actually work
+- [Baileys transport](/docs/transports/baileys): QR login, auth persistence, reconnects, ToS caveats
+- [Cloud API transport](/docs/transports/cloud-api): full Meta dashboard walkthrough
+- [Twilio transport](/docs/transports/twilio): sandbox quickstart, webhook setup, capability table
+- [Testing](/docs/testing): test your bot offline before pointing it at real WhatsApp

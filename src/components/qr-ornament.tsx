@@ -10,7 +10,7 @@ function hashSeed(seed: string): number {
   return h >>> 0;
 }
 
-/** mulberry32 — tiny deterministic PRNG. */
+/** mulberry32, a tiny deterministic PRNG. */
 function mulberry32(a: number): () => number {
   return () => {
     a |= 0;
@@ -27,7 +27,7 @@ const GAP = 2;
 const SIZE = N * CELL + (N - 1) * GAP;
 
 /**
- * Deterministic QR-ish module grid — corner ornament for section bands.
+ * Deterministic QR-ish module grid, the corner ornament for section bands.
  * Decorative only (aria-hidden); renders in `currentColor`, so pass a
  * low-contrast color class such as `text-line`.
  */

@@ -1,7 +1,7 @@
 import type { SVGProps } from 'react';
 
 /**
- * Double-check "read receipt" glyph — the wappa mark.
+ * Double-check "read receipt" glyph, the wappa mark.
  * Inherits `currentColor` so it can rest grey and turn teal
  * (the read-tick transition) purely via CSS color.
  */

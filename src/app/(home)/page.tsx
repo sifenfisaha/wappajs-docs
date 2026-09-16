@@ -15,10 +15,10 @@ const description =
   'wappa is an open-source TypeScript framework for building LLM agents that live on WhatsApp. Pluggable transports, any model with tools, one small agent loop.';
 
 export const metadata: Metadata = {
-  title: { absolute: 'wappa — agents people can text' },
+  title: { absolute: 'wappa: agents people can text' },
   description,
   openGraph: {
-    title: 'wappa — agents people can text',
+    title: 'wappa: agents people can text',
     description,
   },
 };
@@ -147,7 +147,7 @@ const STEPS: Array<{
   {
     cmd: 'npm create wappa-agent my-bot',
     mono: true,
-    note: 'scaffolds src/index.ts, tsconfig, .env.example — pnpm and bun work too',
+    note: 'scaffolds src/index.ts, tsconfig, .env.example; pnpm and bun work too',
   },
   {
     cmd: 'Pick a transport and a model',
@@ -157,7 +157,7 @@ const STEPS: Array<{
   {
     cmd: 'npm start',
     mono: true,
-    note: 'after npm install && npm run build — Baileys prints a QR code on first start',
+    note: 'after npm install && npm run build; Baileys prints a QR code on first start',
     extra: (
       <Terminal title="terminal" className="mt-4 max-w-xs">
         <span aria-hidden="true">{QR_ART}</span>
@@ -218,15 +218,15 @@ function Quickstart() {
 /* ---------- 3 · the agent loop ---------- */
 
 const LOOP_CODE = [
-  { t: "import { Agent, defineTool } from '@wappa/core';" },
-  { t: "import { AnthropicProvider } from '@wappa/anthropic';" },
+  { t: "import { Agent, defineTool } from '@wappajs/core';" },
+  { t: "import { AnthropicProvider } from '@wappajs/anthropic';" },
   { t: "import { z } from 'zod';" },
   { t: '' },
   { t: 'const checkOrderStatus = defineTool({' },
   { t: "  name: 'check_order_status'," },
   { t: "  description: 'Look up an order by number.'," },
   { t: '  parameters: z.object({ orderId: z.string() }),' },
-  { t: '  // results are stringified for the model — return objects' },
+  { t: '  // results are stringified for the model, return objects' },
   { t: '  execute: ({ orderId }) =>' },
   { t: "    ({ orderId, status: 'left warehouse', eta: 'tomorrow' })," },
   { t: '});' },
@@ -254,7 +254,7 @@ function AgentLoop() {
               { kind: 'tool', name: 'check_order_status' },
               {
                 kind: 'in',
-                text: 'Order #1042 left the warehouse yesterday — it should be with you tomorrow.',
+                text: 'Order #1042 left the warehouse yesterday, it should be with you tomorrow.',
                 time: '09:12',
               },
             ]}
@@ -264,9 +264,9 @@ function AgentLoop() {
       <TickList
         className="mt-10 max-w-4xl gap-4 sm:grid sm:grid-cols-2 sm:gap-x-12"
         items={[
-          'Windowed memory that never sends an invalid history — the window always opens on a user message.',
+          'Windowed memory that never sends an invalid history. The window always opens on a user message.',
           'Tool errors go back to the model as text, not to the user.',
-          'maxTurns caps the tool loop (default 8) — no runaway provider bills.',
+          'maxTurns caps the tool loop (default 8), so no runaway provider bills.',
           'Per-chat queues: messages in one conversation run strictly in order.',
         ]}
       />
@@ -280,29 +280,29 @@ const TRANSPORTS = [
   {
     index: '01',
     name: 'Baileys',
-    pkg: '@wappa/baileys',
+    pkg: '@wappajs/baileys',
     href: '/docs/transports/baileys',
-    fact: 'A personal WhatsApp number, logged in by scanning a QR code. No business account, no webhook, no public server — the fastest route to a live agent.',
+    fact: 'A personal WhatsApp number, logged in by scanning a QR code. No business account, no webhook, no public server. The fastest route to a live agent.',
     note: 'unofficial · use a number you can afford to lose',
     chips: ['groups: yes', 'buttons: text-fallback', 'typing: yes', 'media: buffer · url · path'],
   },
   {
     index: '02',
     name: 'Cloud API',
-    pkg: '@wappa/cloud-api',
+    pkg: '@wappajs/cloud-api',
     href: '/docs/transports/cloud-api',
-    fact: "Meta's official WhatsApp Cloud API: inbound via webhook, outbound through the Graph API. Official, supported, no ban risk — the production transport.",
+    fact: "Meta's official WhatsApp Cloud API: inbound via webhook, outbound through the Graph API. Official, supported, no ban risk. The production transport.",
     note: 'official · dm-only · webhook + graph api',
-    chips: ['groups: —', 'buttons: native ×3', 'typing: best-effort', 'media: buffer · url · path'],
+    chips: ['groups: no', 'buttons: native ×3', 'typing: best-effort', 'media: buffer · url · path'],
   },
   {
     index: '03',
     name: 'Twilio',
-    pkg: '@wappa/twilio',
+    pkg: '@wappajs/twilio',
     href: '/docs/transports/twilio',
-    fact: 'WhatsApp through Twilio as your BSP: sandbox in minutes, Twilio owns the Meta relationship. Built on fetch and node:http — no Twilio SDK.',
+    fact: 'WhatsApp through Twilio as your BSP: sandbox in minutes, Twilio owns the Meta relationship. Built on fetch and node:http, with no Twilio SDK.',
     note: 'official · dm-only · sandbox in minutes',
-    chips: ['groups: —', 'buttons: text-fallback', 'typing: —', 'media: url-only'],
+    chips: ['groups: no', 'buttons: text-fallback', 'typing: no', 'media: url-only'],
   },
 ];
 
@@ -382,7 +382,7 @@ function Handoff() {
           <p className="mt-4 text-[15px] leading-relaxed text-ink-muted">
             Sessions are plain data behind a store interface. Swap the in-memory default for{' '}
             <code className="font-mono text-[13px] text-ink">FileSessionStore</code> and history,
-            user data and the paused flag all survive a restart — an escalated chat stays with
+            user data and the paused flag all survive a restart. An escalated chat stays with
             the human until someone explicitly hands it back. The support-agent example ships the
             whole flow, operator notification and{' '}
             <code className="font-mono text-[13px] text-ink">/resume</code> command included.
@@ -393,12 +393,12 @@ function Handoff() {
           status="last seen just now"
           items={[
             { kind: 'out', text: 'can I talk to a real person?', time: '15:32' },
-            { kind: 'in', text: 'Of course — getting someone for you now.', time: '15:32' },
+            { kind: 'in', text: 'Of course, getting someone for you now.', time: '15:32' },
             { kind: 'tool', name: 'escalate_to_human' },
             { kind: 'system', text: '— agent paused · operator notified —' },
             {
               kind: 'in',
-              text: "Hi, this is Dana. I can see your order — give me two minutes.",
+              text: "Hi, this is Dana. I can see your order, give me two minutes.",
               time: '15:33',
             },
           ]}
@@ -412,8 +412,8 @@ function Handoff() {
 
 const TEST_CODE = [
   { t: "import { expect, it } from 'vitest';" },
-  { t: "import { Agent, Bot } from '@wappa/core';" },
-  { t: "import { MockTransport, ScriptedProvider } from '@wappa/core/testing';" },
+  { t: "import { Agent, Bot } from '@wappajs/core';" },
+  { t: "import { MockTransport, ScriptedProvider } from '@wappajs/core/testing';" },
   { t: '' },
   { t: "it('answers without WhatsApp or an API key', async () => {" },
   { t: '  const transport = new MockTransport();' },
@@ -455,7 +455,7 @@ function Testing() {
               <code className="font-mono text-[13px] text-ink">MockTransport</code> records every
               send. <code className="font-mono text-[13px] text-ink">ScriptedProvider</code>{' '}
               replays canned model turns and fails loudly past the end of its script. The whole
-              pipeline — middleware, routing, agent loop, tools, sessions — runs in-memory,
+              pipeline (middleware, routing, agent loop, tools, sessions) runs in-memory,
               deterministic. wappa&apos;s own 429 tests run exactly this way.
             </p>
           </div>
@@ -482,7 +482,7 @@ function FinePrint() {
           <p className="mono-label">The 24-hour window</p>
           <p className="mt-2 font-mono text-[12.5px] leading-[1.7] text-ink-muted">
             On Cloud API and Twilio you can message freely for 24 hours after a customer&apos;s
-            last message. Outside it, WhatsApp requires pre-approved templates — and template
+            last message. Outside it, WhatsApp requires pre-approved templates, and template
             sending is not in wappa yet.
           </p>
         </div>
@@ -501,11 +501,11 @@ function Footer() {
           <div>
             <InstallCmd className="max-w-sm" />
             <p className="mt-8 font-mono text-[12px] leading-relaxed text-ink-muted">
-              wappa <span className="italic">(n.)</span> — what happens when WhatsApp meets a
+              wappa <span className="italic">(n.)</span>: what happens when WhatsApp meets a
               framework.
             </p>
             <p className="mt-2 font-mono text-[12px] text-ink-muted">
-              Built in the open. — the wappa maintainers
+              Built in the open, by the wappa maintainers.
             </p>
           </div>
           <nav

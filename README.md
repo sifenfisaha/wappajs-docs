@@ -1,45 +1,43 @@
 # wappa-docs
 
-This is a Next.js application generated with
-[Create Fumadocs](https://github.com/fuma-nama/fumadocs).
+The documentation site and landing page for
+[wappa](https://github.com/sifenfisaha/wappajs), a TypeScript framework for building
+WhatsApp agents. Built with Next.js and [Fumadocs](https://fumadocs.dev).
 
-Run development server:
+## Develop
 
 ```bash
-npm run dev
-# or
+pnpm install
 pnpm dev
-# or
-yarn dev
 ```
 
-Open http://localhost:3000 with your browser to see the result.
+Then open http://localhost:3000.
 
-## Explore
+```bash
+pnpm build         # production build
+pnpm types:check   # next typegen && tsc --noEmit
+pnpm lint          # oxlint
+```
 
-In the project, you can see:
+## Layout
 
-- `lib/source.ts`: Code for content source adapter, [`loader()`](https://fumadocs.dev/docs/headless/source-api) provides the interface to access your content.
-- `lib/layout.shared.tsx`: Shared options for layouts, optional but preferred to keep.
+| Path | What it is |
+| --- | --- |
+| `content/docs` | The MDX documentation pages |
+| `src/app/(home)` | Landing page |
+| `src/app/docs` | Docs layout and pages |
+| `src/app/api/search/route.ts` | Search route handler |
+| `src/lib/source.ts` | Content source adapter |
+| `src/lib/shared.ts` | App name and GitHub repo config |
+| `DESIGN.md` | The "Read Receipt" brand and the anti-slop contract |
 
-| Route                     | Description                                            |
-| ------------------------- | ------------------------------------------------------ |
-| `app/(home)`              | The route group for your landing page and other pages. |
-| `app/docs`                | The documentation layout and pages.                    |
-| `app/api/search/route.ts` | The Route Handler for search.                          |
+## Writing docs
 
-### Fumadocs MDX
+Pages live in `content/docs` as MDX, with `meta.json` controlling sidebar order. Two
+house rules:
 
-Collections are defined with the [Macro API](https://fumadocs.dev/docs/mdx/macro) in `lib/source.ts`.
-
-Read the [Introduction](https://fumadocs.dev/docs/mdx) for further details.
-
-## Learn More
-
-To learn more about Next.js and Fumadocs, take a look at the following
-resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js
-  features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [Fumadocs](https://fumadocs.dev) - learn about Fumadocs
+1. Every factual claim must be true of the framework itself. Check the source in the
+   [wappa repo](https://github.com/sifenfisaha/wappajs) before writing a claim, and update
+   the landing page stats when the test count changes.
+2. No em dashes in prose. The only exceptions are the mono band labels (`01 — Quickstart`)
+   and the handoff system line, which `DESIGN.md` defines as brand ornaments.

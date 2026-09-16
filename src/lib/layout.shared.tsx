@@ -3,7 +3,7 @@ import { DoubleTick } from '@/components/ticks';
 import { gitConfig } from './shared';
 
 /**
- * Shared nav shell — home and docs read as ONE site.
+ * Shared nav shell, so home and docs read as ONE site.
  * Wordmark: "wappa" in Bricolage 700 lowercase, followed by the ✓✓ mark.
  * Links render in the mono register (13px IBM Plex Mono, via global.css).
  */
