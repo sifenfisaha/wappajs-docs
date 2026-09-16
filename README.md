@@ -1,4 +1,4 @@
-# wappa-docs
+# wappajs-docs
 
 The documentation site and landing page for
 [wappa](https://github.com/sifenfisaha/wappajs), a TypeScript framework for building
