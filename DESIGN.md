@@ -107,13 +107,15 @@ shared Fumadocs shell, untouched: same wordmark, sidebar, search and theme toggl
    sticky, so a full-bleed dark hero would either leave a hard light seam under the
    nav or drag a dark nav onto light content when scrolled.
    Type-first, single column, capped at 34rem: mono kicker
-   `THE WHATSAPP AGENT FRAMEWORK`; H1 **"Agents people can text."** at
+   `THE WHATSAPP AGENT FRAMEWORK`; H1 **"The agent framework for WhatsApp."** at
    clamp(2.9rem, 7.4vw, 5.4rem), leading 0.95; sub in Schibsted ink-muted; a pill pair
    (Read the docs / GitHub); `<InstallCmd>`. Nothing else. The MIT/429/3/0 stat row
    that used to close the hero is gone: the numbers were true but they read as
    badge-collecting, and the quickstart panel is a better next beat.
    The right half is `<QrWall>` alone, vertically centred and cropped by the panel's
-   right edge. The crop is not decoration-by-accident: a COMPLETE QR at that size
+   right edge. Its width and bleed are per-breakpoint (440px from `lg`, 620px from
+   `xl`) because it is absolutely positioned: at a fixed size it slides under the
+   headline on narrow laptops. Below `lg` it is hidden entirely. The crop is not decoration-by-accident: a COMPLETE QR at that size
    invites a scan, and this one carries no payload, so it must always run off an edge.
    Hidden below `md`, where the hero is pure type.
 

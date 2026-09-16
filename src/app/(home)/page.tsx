@@ -41,7 +41,7 @@ function Hero() {
           <QrWall
             seed="agents people can text"
             size={620}
-            className="pointer-events-none absolute -right-28 top-1/2 hidden -translate-y-1/2 text-ink-faint/25 md:block lg:-right-32"
+            className="pointer-events-none absolute top-1/2 hidden h-auto w-[440px] -translate-y-1/2 text-ink-faint/25 lg:-right-40 lg:block xl:-right-56 xl:w-[620px]"
           />
 
           <HeroNav github={github} />
@@ -49,7 +49,7 @@ function Hero() {
           <div className="relative max-w-[34rem]">
             <p className="mono-label">The WhatsApp agent framework</p>
             <h1 className="mt-5 max-w-[13ch] font-display text-[clamp(2.9rem,7.4vw,5.4rem)] font-bold leading-[0.95] tracking-[-0.03em]">
-              Agents people can&nbsp;text.
+              The agent framework for WhatsApp.
             </h1>
             <p className="mt-7 max-w-[44ch] text-[17px] leading-relaxed text-ink-muted">
               An open-source TypeScript framework for LLM agents that live on WhatsApp.
@@ -166,7 +166,13 @@ function Footer() {
               framework.
             </p>
             <p className="mt-2 font-mono text-[12px] text-ink-muted">
-              Built in the open, by the wappa maintainers.
+              Built by{' '}
+              <a
+                href="https://seefun.dev"
+                className="text-ink transition-colors hover:text-teal"
+              >
+                seefun.dev
+              </a>
             </p>
           </div>
           <nav
