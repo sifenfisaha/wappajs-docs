@@ -77,59 +77,182 @@ function Hero() {
 
 /* ---------- 2 · the panel that laps over the hero ---------- */
 
-const START_STEPS = [
+const CAPABILITIES = [
   {
     index: '01',
-    title: 'Scaffold it',
-    cmd: 'npm create wappa-agent my-bot',
-    body: 'Writes src/index.ts, a tsconfig and .env.example, with the packages for your answers already pinned. pnpm and bun work too.',
+    title: 'Transports',
+    items: [
+      'Baileys: personal number, QR login, groups',
+      'Cloud API: official Meta webhook and Graph API',
+      'Twilio: WhatsApp Business API through a BSP',
+      'One normalized message model across all three',
+    ],
   },
   {
     index: '02',
-    title: 'Pick a body and a brain',
-    cmd: '--transport baileys --provider anthropic',
-    body: 'Baileys, Cloud API or Twilio for the transport. Claude, GPT or any OpenAI-compatible server for the model. Omit the flags and it asks.',
+    title: 'Bot pipeline',
+    items: [
+      'Per-chat queues, concurrent across chats',
+      'Middleware chain with command() and hears()',
+      'Sessions saved on every message, failures included',
+      'Pause and resume for human handoff',
+    ],
   },
   {
     index: '03',
-    title: 'Scan it, then text it',
-    cmd: 'npm start',
-    body: 'Baileys prints a QR code on first start. Link it from WhatsApp once, auth persists in ./wappa-auth, and the agent is live.',
+    title: 'Agent loop',
+    items: [
+      'History windows always open on a user message',
+      'Tool call and result groups are never split',
+      'Failed turns roll back before the error propagates',
+      'maxTurns cap, then a final call without tools',
+    ],
+  },
+  {
+    index: '04',
+    title: 'Tools',
+    items: [
+      'Argument types inferred from zod schemas',
+      'Model arguments validated before execute runs',
+      'Invalid arguments return as retryable results',
+      'A failing tool never crashes the loop',
+    ],
+  },
+  {
+    index: '05',
+    title: 'Models',
+    items: [
+      '@wappajs/anthropic, default claude-sonnet-5',
+      '@wappajs/openai, default gpt-5',
+      'Any OpenAI-compatible server via baseURL',
+      'A custom provider is one generate() method',
+    ],
+  },
+  {
+    index: '06',
+    title: 'Testing',
+    items: [
+      'MockTransport records everything the bot sent',
+      'ScriptedProvider replays turns and tool calls',
+      'The whole pipeline runs offline',
+      'No QR, no webhook, no API key',
+    ],
   },
 ] as const;
 
-function Start() {
+const MATRIX = {
+  head: ['', 'baileys', 'cloud-api', 'twilio'],
+  rows: [
+    ['Official / ToS-safe', 'no, ban risk', 'yes', 'yes'],
+    ['Groups', 'yes', 'DM only', 'DM only'],
+    ['Quick-reply buttons', 'numbered fallback', 'native, max 3', 'numbered fallback'],
+    ['Typing indicator', 'yes', 'best effort', 'not supported'],
+    ['Read receipts', 'yes', 'yes', 'not supported'],
+    ['Outbound media', 'buffer, url, path', 'buffer, url, path', 'public url only'],
+    ['Proactive messages', 'any time', '24h window', '24h window'],
+  ],
+} as const;
+
+function Capabilities() {
   return (
     <div className="relative z-10 -mt-16 sm:-mt-20">
       <Container>
         <div className="panel px-4 py-16 sm:px-10 sm:py-20 lg:px-14">
           <div className="mx-auto max-w-2xl text-center">
-            <p className="mono-label">Quickstart</p>
+            <p className="mono-label">Capabilities</p>
             <h2 className="mt-4 font-display text-[clamp(1.9rem,4vw,2.9rem)] font-bold leading-[1.02] tracking-[-0.02em]">
-              Ninety seconds to a live agent.
+              The parts you would otherwise write yourself.
             </h2>
             <p className="mt-5 text-[16px] leading-relaxed text-ink-muted">
-              No Meta business account. No tunnel. No public server. A QR code and a phone.
+              Transport differences, conversation memory, tool validation and per-chat ordering
+              all live in the core.
             </p>
           </div>
 
-          <ol className="mt-16 grid grid-cols-1 gap-x-10 gap-y-12 sm:grid-cols-3">
-            {START_STEPS.map((step) => (
-              <li key={step.index} className="border-t border-line pt-6">
-                <p className="font-mono text-[11.5px] tracking-[0.08em] text-teal">{step.index}</p>
-                <h3 className="mt-4 font-display text-[19px] font-semibold leading-snug tracking-[-0.01em]">
-                  {step.title}
-                </h3>
-                <p className="mt-3 font-mono text-[12px] leading-relaxed text-ink">
-                  <span aria-hidden="true" className="select-none text-ink-faint">
-                    ${' '}
+          <ul className="mt-16 grid grid-cols-1 gap-x-10 gap-y-11 sm:grid-cols-2 lg:grid-cols-3">
+            {CAPABILITIES.map((cap) => (
+              <li key={cap.index} className="border-t border-line pt-6">
+                <div className="flex items-baseline gap-3">
+                  <span className="font-mono text-[11.5px] tracking-[0.08em] text-teal">
+                    {cap.index}
                   </span>
-                  {step.cmd}
-                </p>
-                <p className="mt-3 text-[14px] leading-relaxed text-ink-muted">{step.body}</p>
+                  <h3 className="font-display text-[19px] font-semibold leading-snug tracking-[-0.01em]">
+                    {cap.title}
+                  </h3>
+                </div>
+                <ul className="mt-4 space-y-2">
+                  {cap.items.map((item) => (
+                    <li
+                      key={item}
+                      className="font-mono text-[12px] leading-relaxed text-ink-muted"
+                    >
+                      {item}
+                    </li>
+                  ))}
+                </ul>
               </li>
             ))}
-          </ol>
+          </ul>
+
+          {/* The claim above is that a transport is interchangeable. This is the receipt:
+              the differences you actually inherit, stated rather than glossed. */}
+          <div className="mt-20 border-t border-line pt-10">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
+              <p className="mono-label">Transport capabilities</p>
+              <Link
+                href="/docs/transports"
+                className="font-mono text-[12px] text-ink-muted transition-colors hover:text-teal"
+              >
+                full comparison
+                <ArrowRight aria-hidden="true" className="ml-1.5 inline h-3 w-3" />
+              </Link>
+            </div>
+
+            <div className="-mx-4 mt-6 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+              <table className="w-full min-w-[34rem] border-collapse text-left">
+                <thead>
+                  <tr>
+                    {MATRIX.head.map((cell, i) => (
+                      <th
+                        key={cell}
+                        scope="col"
+                        className={`pb-3 font-mono text-[11.5px] font-normal tracking-[0.08em] ${
+                          i === 0 ? 'text-ink-faint' : 'text-teal'
+                        }`}
+                      >
+                        {cell}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {MATRIX.rows.map(([label, ...values]) => (
+                    <tr key={label} className="border-t border-line">
+                      <th
+                        scope="row"
+                        className="py-3 pr-6 text-[13.5px] font-normal leading-snug text-ink"
+                      >
+                        {label}
+                      </th>
+                      {values.map((value, i) => (
+                        <td
+                          key={`${label}-${i}`}
+                          className="py-3 pr-6 font-mono text-[12px] leading-snug text-ink-muted"
+                        >
+                          {value}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <p className="mt-8 max-w-[62ch] text-[14px] leading-relaxed text-ink-muted">
+              Because the message model is normalized, a bot written against one transport runs
+              on the others.
+            </p>
+          </div>
         </div>
       </Container>
     </div>
@@ -210,7 +333,7 @@ export default function HomePage() {
   return (
     <div className="flex-1">
       <Hero />
-      <Start />
+      <Capabilities />
       <Footer />
     </div>
   );
