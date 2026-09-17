@@ -20,12 +20,14 @@ Light (default):
 - `--bubble-out`: #DCF0D0 (outgoing bubble fill — a shifted quote of WhatsApp's #DCF8C6)
 - `--signal`: #FF6247 (coral. RARE: focus rings, "new" badges, one accent per viewport max)
 - `--line`: #DCD4C4 (1px hairlines everywhere; borders are the structure, shadows almost never)
+- `--hero`: #EFE9DC (hero panel ground, one step UNDER paper so the hero reads inset while
+  `--surface` panels read raised. It follows the theme like everything else.)
 - `--tick`: #53BDEB-adjacent is WhatsApp's blue tick — instead use `--teal` for read ticks.
 
 Dark ("night wallpaper" — required, docs users expect it):
-- `--paper`: #101713, `--surface`: #18211C, `--ink`: #EDE7DA, `--ink-muted`: #9AA79E,
-  `--teal`: #4FB79A, `--teal-deep`: #6BCBB0, `--bubble-out`: #1F3328, `--line`: #2A342E,
-  `--signal`: #FF7A63.
+- `--paper`: #101713, `--hero`: #0C1210, `--surface`: #18211C, `--ink`: #EDE7DA,
+  `--ink-muted`: #9AA79E, `--teal`: #4FB79A, `--teal-deep`: #6BCBB0, `--bubble-out`: #1F3328,
+  `--line`: #2A342E, `--signal`: #FF7A63.
 
 Map ALL Fumadocs `--color-fd-*` variables onto these (background, foreground, muted,
 muted-foreground, card, card-foreground, border, primary, primary-foreground, accent,
@@ -79,33 +81,36 @@ All via `next/font/google`, subsets latin, `display: swap`:
    encoder shipped. Hero only, ink-faint, clipped by the panel edge. It is the
    product's own iconography, which is why the hero needs no orb, sphere or gradient.
 8. **Panels**: the ONE large radius on the site (`--radius-panel`, 30px), used exactly
-   three times: the night hero, the quickstart panel that laps over it, and the closing
+   three times: the hero, the quickstart panel that laps over it, and the closing
    CTA. Hairline border, flat fill, NO drop shadow. The overlap does the work, not a
    blur. Two stacked panels are a composition; more than that would be a card stack,
    which is still banned.
 9. **Pills**: `.pill-solid` (ink fill, teal on hover) and `.pill-ghost` (hairline).
    Press is a 1px nudge. The only rounded-full elements on the page, apart from the
    theme switch.
-10. **`<HeroNav>`** - the home page's nav, living inside the night panel. Wordmark plus
+10. **`<HeroNav>`** - the home page's nav, living inside the hero panel. Wordmark plus
    ✓✓ on the left; GitHub mark, search trigger and theme switch on the right. The last
    two are Fumadocs slots (`layouts/shared/slots/search-trigger`, `.../theme-switch`),
    so ⌘K and the theme toggle behave exactly as they do in the docs. They read
-   `--color-fd-*`, which resolve through the palette vars, so `.night` recolours them
-   with no extra work. GitHub's mark is inlined because lucide dropped brand icons.
+   `--color-fd-*`, which resolve through the palette vars, so both follow the active
+   theme with no extra work. GitHub's mark is inlined because lucide dropped brand icons.
 
 ## Landing page (app/(home)/page.tsx) — section by section
 
 Nav: the home page has NO sticky bar. Fumadocs' nav is switched off for this route
-(`nav={{ enabled: false }}` in `(home)/layout.tsx`) and `<HeroNav>` sits inside the night
+(`nav={{ enabled: false }}` in `(home)/layout.tsx`) and `<HeroNav>` sits inside the hero
 panel instead, which is what lets the hero own the top of the page. The docs keep the
 shared Fumadocs shell, untouched: same wordmark, sidebar, search and theme toggle.
 
-1. **HERO**: a night panel, inset from the page edges, rounded to `--radius-panel`.
-   The palette is inverted in place by the `.night` utility (a shade deeper than the
-   dark theme's own paper, so it still reads as a panel when the whole site is dark);
-   every child component follows without new props. It is NOT full-bleed: the nav is
-   sticky, so a full-bleed dark hero would either leave a hard light seam under the
-   nav or drag a dark nav onto light content when scrolled.
+1. **HERO**: a panel inset from the page edges, rounded to `--radius-panel`. It FOLLOWS
+   THE THEME: `bg-hero` is one step under `--paper` in each theme (#EFE9DC on light,
+   #0C1210 on dark), so the hero always reads as a recessed panel without pinning a
+   palette. It used to force a dark palette in place via a `.night` utility; that made
+   the hero — and the theme switch inside it — read dark while the rest of the site was
+   light, so the toggle looked stuck on. Every child component follows the theme through
+   the palette vars, with no new props. It is NOT full-bleed: the nav is sticky, so a
+   full-bleed hero would either leave a hard seam under the nav or drag the hero's ground
+   onto the next section when scrolled.
    Type-first, single column, capped at 34rem: mono kicker
    `THE WHATSAPP AGENT FRAMEWORK`; H1 **"The agent framework for WhatsApp."** at
    clamp(2.9rem, 7.4vw, 5.4rem), leading 0.95; sub in Schibsted ink-muted; a pill pair
@@ -120,7 +125,7 @@ shared Fumadocs shell, untouched: same wordmark, sidebar, search and theme toggl
    Hidden below `md`, where the hero is pure type.
 
 2. **"NINETY SECONDS TO A LIVE AGENT"** (paper panel, mono label `01 — QUICKSTART`).
-   Laps over the night hero by about 4 to 5rem of negative margin: the two interlocking
+   Laps over the hero by about 4 to 5rem of negative margin: the two interlocking
    panels are the page's signature move. Centred statement heading, one-line lede,
    then THREE numbered columns (`01 / 02 / 03` in teal mono, hairline top rule each):
    scaffold it · pick a body and a brain · scan it, then text it. Each column carries

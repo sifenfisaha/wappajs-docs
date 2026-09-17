@@ -14,13 +14,13 @@ function GithubMark(props: SVGProps<SVGSVGElement>) {
 }
 
 /**
- * The home page's own nav, living inside the night hero panel rather than in a
- * sticky bar above it. Fumadocs' nav is disabled on this route (see
+ * The home page's own nav, living inside the hero panel rather than in a sticky
+ * bar above it. Fumadocs' nav is disabled on this route (see
  * `(home)/layout.tsx`); the docs keep theirs.
  *
  * `SearchTrigger` and `ThemeSwitch` are Fumadocs slots, so ⌘K and the theme
  * toggle behave exactly as they do in the docs. They read `--color-fd-*`, which
- * resolve through the palette vars, so the `.night` scope recolours them with no
+ * resolve through the palette vars, so both follow the active theme with no
  * extra work.
  */
 export function HeroNav({ github }: { github: string }) {

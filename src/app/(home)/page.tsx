@@ -28,13 +28,13 @@ function Container({ children, className }: { children: ReactNode; className?: s
   );
 }
 
-/* ---------- 1 · the night hero ---------- */
+/* ---------- 1 · the hero ---------- */
 
 function Hero() {
   return (
     <section className="pt-3 sm:pt-5">
       <Container>
-        <div className="night relative overflow-hidden rounded-panel border border-line bg-paper px-4 pb-24 pt-5 sm:px-10 sm:pb-32 sm:pt-6 lg:px-14 lg:pb-40">
+        <div className="relative overflow-hidden rounded-panel border border-line bg-hero px-4 pb-24 pt-5 sm:px-10 sm:pb-32 sm:pt-6 lg:px-14 lg:pb-40">
           {/* The product's own iconography at architectural scale, bleeding off the
               right edge and clipped by the panel radius. Logging a bot in means
               scanning one of these, which is why this hero needs no orb. */}

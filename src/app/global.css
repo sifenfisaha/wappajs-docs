@@ -8,6 +8,7 @@
 /* ---------- palette ---------- */
 :root {
   --paper: #f6f1e7; /* page ground, warm chat-wallpaper */
+  --hero: #efe9dc; /* hero panel ground, one step under paper so the panel reads inset */
   --surface: #fffdf8; /* cards, incoming bubbles, code chrome */
   --ink: #14211b; /* text, green-tinted near-black */
   --ink-muted: #5c6b62; /* 5.0:1 on paper, AA */
@@ -29,6 +30,7 @@
 /* night wallpaper */
 .dark {
   --paper: #101713;
+  --hero: #0c1210; /* a shade under the dark paper, so the hero still reads as a panel */
   --surface: #18211c;
   --ink: #ede7da;
   --ink-muted: #9aa79e; /* 7.3:1 on paper */
@@ -89,6 +91,7 @@
 
   /* palette as utilities: bg-paper, text-ink, border-line, text-teal … */
   --color-paper: var(--paper);
+  --color-hero: var(--hero);
   --color-surface: var(--surface);
   --color-ink: var(--ink);
   --color-ink-muted: var(--ink-muted);
@@ -206,13 +209,14 @@ html > body[data-scroll-locked] {
   border-top: 1px solid var(--line);
 }
 
-/* The one large radius on the site: the paper panel that laps over the night hero.
+/* The one large radius on the site: the panel that laps over the hero.
    Flat, hairlined, no drop shadow. The overlap does the work, not a blur. */
 @utility panel {
   position: relative;
   border: 1px solid var(--line);
   border-radius: var(--radius-panel);
-  /* surface, not paper: it has to lift off the night hero in BOTH themes. */
+  /* surface, not paper: --hero sits one step under paper and --surface one step
+     over it, so this lifts off the hero in BOTH themes. */
   background-color: var(--surface);
 }
 
@@ -262,26 +266,6 @@ html > body[data-scroll-locked] {
   &:active {
     transform: translateY(1px);
   }
-}
-
-/* The night hero inverts the palette in place, so every child component
-   (bubbles, ticks, code chrome, install command) follows without new props. */
-@utility night {
-  /* A shade under the dark theme's own paper (#101713), so the hero still reads
-     as a distinct panel when the whole site is already dark. */
-  --paper: #0c1210;
-  --surface: #18211c;
-  --ink: #ede7da;
-  --ink-muted: #9aa79e;
-  --ink-faint: #566058;
-  --teal: #4fb79a;
-  --teal-deep: #6bcbb0;
-  --bubble-out: #1f3328;
-  --signal: #ff7a63;
-  --line: #2a342e;
-
-  background-color: var(--paper);
-  color: var(--ink);
 }
 
 /* mono ornament register: `01 — TRANSPORTS`, timestamps, metadata chips */
