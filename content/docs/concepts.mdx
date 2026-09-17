@@ -17,12 +17,18 @@ const bot = new Bot({
   sessions,                  // default: new MemorySessionStore()
   ignoreFromMe: true,        // default true: drop messages sent by the bot's own number
   ignoreGroups: false,       // default false
-  allowFrom: ['15551234567'],// optional allowlist of senderIds; others silently dropped
+  allowFrom: ['15551234567'],// optional: senderIds, transport-specific format; silent drop
   logger,                    // default consoleLogger() ('info' level)
   onError,                   // default: logger.error
   typingIndicator: true,     // default true: best-effort typing indicator while the agent thinks
 });
 ```
+
+`allowFrom` is matched against `senderId` **exactly**, and every transport spells that
+differently: `whatsapp:+15551234567` on [Twilio](/docs/transports/twilio), a bare phone
+number on the [Cloud API](/docs/transports/cloud-api), and a JID on
+[Baileys](/docs/transports/baileys). Pasting the bare number above into a Twilio bot
+matches nothing, and drops every message.
 
 ### The pipeline, in exact order
 
@@ -55,6 +61,27 @@ For each inbound message:
    left behind is persisted.
 6. **Errors** anywhere in the pipeline go to `onError(err, ctx)`; they never crash the
    process or the queue.
+
+<Callout type="warn" title="Receiving messages but doing nothing?">
+  Step 1 drops are **silent by design**: nothing is logged, at any level, and no session
+  is written. From the outside a dropped message is indistinguishable from a handled one,
+  because the transport acknowledges the webhook **before** the pipeline runs, so Twilio,
+  Meta and your tunnel all report `200 OK` while the bot ignores you.
+
+  Work down the filters in order:
+
+  - **`allowFrom`**: the most common cause. It must hold the sender id in the transport's
+    own format (see above). Log `ctx.message.senderId` from a middleware, or read `From` in
+    your tunnel's request inspector, and compare the two strings character by character.
+  - **`ignoreFromMe`** (default `true`): on Baileys, messaging your own linked number
+    makes every message `fromMe`. Test from a different phone.
+  - **`ignoreGroups`**, or a group mention filter of your own that matched nothing.
+  - **`bot.stop()` already called**: a stopping bot drops new messages while it drains.
+
+  An empty session store is the giveaway: sessions are saved for **every** message that
+  reaches the pipeline, even one whose agent turn threw. No session means the message never
+  got past step 1.
+</Callout>
 
 ### Routing
 

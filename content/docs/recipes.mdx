@@ -1,10 +1,124 @@
 ---
 title: Recipes
-description: Practical patterns built from the core primitives, covering handoff, media, group mentions, proactive messages, transcription, rate limits, and buttons.
+description: Practical patterns built from the core primitives, covering calling your own API, handoff, media, group mentions, proactive messages, transcription, rate limits, and buttons.
 ---
 
 Practical patterns built from the primitives in [Concepts](/docs/concepts). Everything
 here is plain wappa, with no extra framework features involved.
+
+## Calling your own API
+
+A tool is only worth defining if it reaches something the model cannot know: your
+database, your service, your API. The usual shape is one small client plus one tool per
+operation, with the client owning error phrasing and the tools owning argument shapes.
+
+```ts
+import { defineTool } from '@wappajs/core';
+import { z } from 'zod';
+
+const API = process.env.TODO_API_URL ?? 'http://localhost:4001';
+
+/** One place to turn HTTP failures into sentences the model can act on. */
+async function api<T>(path: string, init?: RequestInit): Promise<T> {
+  let res: Response;
+  try {
+    res = await fetch(`${API}${path}`, {
+      ...init,
+      headers: init?.body ? { 'Content-Type': 'application/json' } : undefined,
+    });
+  } catch {
+    // A dead API is the likeliest failure in dev, and this string is what the model
+    // will relay to the user, so say which API and what is wrong with it.
+    throw new Error(`Cannot reach the API at ${API}. It may not be running.`);
+  }
+  if (res.status === 204) return undefined as T;
+  const body = await res.json().catch(() => undefined);
+  if (!res.ok) throw new Error(body?.error ?? `Request failed with status ${res.status}`);
+  return body as T;
+}
+
+type Todo = { id: string; title: string; completed: boolean; createdAt: string };
+
+/** Send the model the fields it reasons about, not the whole record. */
+const summarize = (t: Todo) => ({ id: t.id, title: t.title, completed: t.completed });
+
+const listTodos = defineTool({
+  name: 'list_todos',
+  description: 'List the user\'s todos. Call this before updating one, so you act on the right item.',
+  parameters: z.object({
+    completed: z.boolean().optional().describe('Only done (true) or only open (false). Omit for all.'),
+  }),
+  async execute({ completed }) {
+    const query = completed === undefined ? '' : `?completed=${completed}`;
+    return (await api<Todo[]>(`/api/todos${query}`)).map(summarize);
+  },
+});
+
+const completeTodo = defineTool({
+  name: 'complete_todo',
+  description: 'Mark a todo as done.',
+  parameters: z.object({
+    todo: z.string().describe("The todo's id, or enough of its title to identify it"),
+  }),
+  async execute({ todo }) {
+    const target = await resolve(todo); // loose lookup, defined below
+    return summarize(
+      await api<Todo>(`/api/todos/${target.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ completed: true }),
+      }),
+    );
+  },
+});
+```
+
+### Let the user speak in names, not ids
+
+Your API identifies records by id; the person typing into WhatsApp says "the milk one".
+Resolve loosely, and refuse to guess when the match is ambiguous:
+
+```ts
+async function resolve(idOrTitle: string): Promise<Todo> {
+  const todos = await api<Todo[]>('/api/todos');
+  const needle = idOrTitle.trim().toLowerCase();
+
+  const byId = todos.find((t) => t.id === idOrTitle.trim());
+  if (byId) return byId;
+
+  const matches = todos.filter((t) => t.title.toLowerCase().includes(needle));
+  if (matches.length === 1) return matches[0]!;
+  if (matches.length === 0) {
+    throw new Error(`No todo matches "${idOrTitle}". Call list_todos to see what exists.`);
+  }
+  throw new Error(
+    `"${idOrTitle}" matches ${matches.length} todos: ${matches.map((t) => t.title).join(', ')}. ` +
+      `Ask the user which one they mean.`,
+  );
+}
+```
+
+Those thrown errors are not failures: they are turns in the conversation. `invoke`
+[never throws](/docs/concepts#tools): it catches whatever `execute` raises and returns
+`"Error: <message>"` as the tool result, which the model reads and acts on within the
+same `maxTurns` budget. So "delete the call one" against two matching todos produces a
+question back to the user rather than a coin flip, and a 404 from your API becomes an
+apology instead of a stack trace. Write every message in a tool for that reader.
+
+### Practical notes
+
+- **Return less than you have.** Whole API records cost tokens on every subsequent turn
+  (they stay in history) and invite the model to quote fields like `createdAt` at people.
+  Project down to what it needs to reason about.
+- **Read config at module load, in the bot's process.** The bot and your API are usually
+  two processes with two sets of environment variables. If the bot resolves
+  `TODO_API_URL` to a port nothing is serving, every tool fails identically, which is
+  why the client above names the URL in its error.
+- **Tools run inside the per-chat queue.** Messages from one chat are processed
+  sequentially, so a slow API call delays that chat's next message but never blocks
+  other chats. Keep tool calls quick, and prefer a `signal: AbortSignal.timeout(10_000)`
+  in `fetch` over letting a hung request eat the turn.
+- **Validate at the edge anyway.** zod checks what the model sent against your schema,
+  not what your API will accept. Business rules still belong in the API.
 
 ## Human handoff
 
