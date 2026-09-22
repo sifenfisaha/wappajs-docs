@@ -85,7 +85,7 @@ const CAPABILITIES = [
       'Baileys: personal number, QR login, groups',
       'Cloud API: official Meta webhook and Graph API',
       'Twilio: WhatsApp Business API through a BSP',
-      'One normalized message model across all three',
+      'Webhooks mount into node:http or any fetch host',
     ],
   },
   {
@@ -123,8 +123,8 @@ const CAPABILITIES = [
     title: 'Models',
     items: [
       '@wappajs/anthropic, default claude-sonnet-5',
-      '@wappajs/openai, default gpt-5',
-      'Any OpenAI-compatible server via baseURL',
+      'Knowledge cached at the API, thinking blocks replayed',
+      '@wappajs/openai, gpt-5 or any compatible server via baseURL',
       'A custom provider is one generate() method',
     ],
   },
